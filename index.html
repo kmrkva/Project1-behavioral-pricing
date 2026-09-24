@@ -118,6 +118,8 @@
   .sb-qcard label.field-label.primary { font-size: 0.95rem; margin-top: 0; }
   .sb-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
   .sb-nav .status-msg { font-size: 0.82rem; color: var(--bad); }
+  .status-note { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 8px; }
+  .section-nav .status-note { text-align: right; }
   button.nav-btn {
     background: var(--accent); color: #fff; border: none; border-radius: 6px;
     padding: 10px 20px; font-size: 0.92rem; font-weight: 600; cursor: pointer;
@@ -271,9 +273,9 @@ function buildStartTab() {
     <div class="card">
       <span class="badge no-ai">No AI</span>
       <h2>Choose Your Company</h2>
-      <p class="helptext">Pick any online subscription company with a plan-selection page that lists prices. Smaller companies often leave more room for improvement. Let your instructor know your choice so it can be confirmed as not already taken.</p>
+      <p class="helptext">Pick any online subscription company with a plan-selection page that lists prices. Small to mid-sized subscription companies (e.g., Yippee, Nebula, etc) are often a bit easier than the most popular companies (e.g., Netflix) because they often have more room for improvement and don't already use the behavioral pricing principles. But you are welcome to choose any subscription company as long as it hasn't already been taken by another student.</p>
       <label class="field-label" for="company-name">Which subscription company did you choose?</label>
-      <input type="text" id="company-name" placeholder="e.g. Headspace">
+      <input type="text" id="company-name">
       <label class="field-label" for="company-url">Link to that company's subscription pricing page</label>
       <input type="url" id="company-url" placeholder="https://...">
     </div>
@@ -383,7 +385,7 @@ function buildB10Prefill() {
 function renderSectionB() {
   const c = document.getElementById("sb-container");
   if (!c) return;
-  if (sbReview) { c.innerHTML = buildReviewHTML(); wireReviewButtons(); return; }
+  if (sbReview) { c.innerHTML = buildReviewHTML(); wireReviewButtons(); updatePlanContinueNav(); return; }
   const n = sbIndex + 1;
   if (n === 10 && !b10Prefilled) {
     sbAnswers[9] = buildB10Prefill();
@@ -392,6 +394,21 @@ function renderSectionB() {
   }
   c.innerHTML = buildQuestionHTML(n);
   wireQuestionHandlers(n);
+  updatePlanContinueNav();
+}
+
+function planSectionComplete() {
+  return sbAnswers.length === QUESTIONS.length && sbAnswers.every(a => (a || "").trim().length > 0);
+}
+
+function updatePlanContinueNav() {
+  const btn = document.getElementById("continue-plan");
+  const note = document.getElementById("plan-gate-note");
+  if (!btn) return;
+  const complete = planSectionComplete();
+  btn.disabled = !complete;
+  btn.title = complete ? "" : "Answer all 10 questions in Plan Your Redesign before continuing.";
+  if (note) note.style.display = complete ? "none" : "";
 }
 
 function buildQuestionHTML(n) {
@@ -729,36 +746,38 @@ function buildPartShowcase() {
     <div class="card">
       <span class="badge extra">Optional, extra credit</span>
       <h2>Showcase Your Work</h2>
-      <p class="helptext">Turning your before/after work into something portfolio-ready for internships or job applications is optional and worth extra credit. Pick whichever of these two options fits you better; you only need to do one.</p>
+      <p class="helptext">Turning your before/after work into something portfolio-ready for internships or job applications is optional and worth extra credit. If you choose to do the extra credit, you can choose one or the other or do both.</p>
       <div class="subtab-bar">
-        <button class="subtab-btn active" id="subtab-btn-github" data-subtab="github">Option 1: GitHub Repo</button>
-        <button class="subtab-btn" id="subtab-btn-visual" data-subtab="visual">Option 2: Visual Case Study</button>
+        <button class="subtab-btn active" id="subtab-btn-github" data-subtab="github">Option 1: GitHub Repo (1 pt EC)</button>
+        <button class="subtab-btn" id="subtab-btn-visual" data-subtab="visual">Option 2: Visual Case Study (2 pts EC)</button>
       </div>
 
       <div class="subtab-panel active" data-subtab="github">
-        <p class="helptext">Put both .html files in a repository so anyone can see the actual code behind your redesign. This is likely the easier option overall, even if you've never used GitHub before.</p>
+        <p class="helptext">Worth 1 point of extra credit. Put both .html files in a repository so anyone can see the actual code behind your redesign. This is likely the easier option overall, even if you've never used GitHub before.</p>
         <ol class="steps">
           <li>Create a free account at <a href="https://github.com" target="_blank" rel="noopener">github.com</a> if you don't already have one.</li>
           <li>Click "New" to create a new repository (any name is fine, e.g., "subscription-pricing-redesign").</li>
           <li>On the repository page, click "Add file → Upload files" and drag in your before.html and after.html. This all happens in the browser; no command line needed.</li>
           <li>Copy the repository's URL from your browser's address bar.</li>
         </ol>
+        <label class="field-label" for="github-link">Your GitHub repo URL</label>
+        <input type="url" id="github-link" placeholder="https://github.com/...">
       </div>
 
       <div class="subtab-panel" data-subtab="visual">
-        <p class="helptext">Make one polished, visual case-study image: a single picture a stranger could understand in 10 seconds.</p>
+        <p class="helptext">Worth 2 points of extra credit. Make one polished, visual case-study image: a single picture a stranger could understand in 10 seconds.</p>
         <ol class="steps">
           <li>Take a screenshot of your "before" page and your "after" page.</li>
           <li>Paste both into a free design tool (see below) side by side.</li>
           <li>Draw arrows or callout boxes pointing at what changed, each labeled with the behavioral pricing principle behind it (e.g., an arrow to the new price pointing at "$9.99" labeled "left-digit bias").</li>
           <li>Add a short "Skills used" line at the bottom (e.g., behavioral pricing analysis, prompting an AI page builder like Lovable, visual/UI design).</li>
-          <li>Export it as one image or PDF, and put it somewhere with a shareable link (a Notion page, Google Drive, or your design tool's own share link all work).</li>
+          <li>Export it as one image.</li>
+          <li>Create a free <a href="https://notion.so" target="_blank" rel="noopener">Notion</a> page (Notion works well here because it doubles as a simple portfolio page). Paste in your annotated image, add a 1-2 sentence summary of the redesign above it, and set the page's share setting to "anyone with the link can view" (not published to the public web). Copy that page's link below.</li>
         </ol>
         <p class="helptext">Good free tools for the arrows and labels: <a href="https://canva.com" target="_blank" rel="noopener">Canva</a> (easiest — has drag-and-drop arrow and text tools made for this kind of before/after layout) or <a href="https://slides.google.com" target="_blank" rel="noopener">Google Slides</a> (works fine if you already have a Google account: paste the screenshots onto one slide and use the shape tool for arrows). <a href="https://figma.com" target="_blank" rel="noopener">Figma</a> is a solid third option if you're already comfortable with it, but has more of a learning curve for something this small. We don't recommend trying to have Lovable generate this part: it can't take real screenshots of your two pages or place arrows on exact pixels, so it would likely just guess at a rebuilt version instead of showing your actual work.</p>
+        <label class="field-label" for="notion-link">Your Notion case study link</label>
+        <input type="url" id="notion-link" placeholder="https://notion.so/...">
       </div>
-
-      <label class="field-label" for="notion-link">Link to your extra credit work (GitHub repo, or Canva/Notion/Slides visual), if you're doing this part</label>
-      <input type="url" id="notion-link" placeholder="https://...">
     </div>
   `;
   panelsEl.appendChild(panel);
@@ -788,12 +807,17 @@ function appendSectionNav(tabId) {
   nav.className = "section-nav";
   if (idx > -1 && idx < TABS.length - 1) {
     const nextLabel = TABS[idx + 1].label.replace(/^\d+\.\s*/, "");
-    nav.innerHTML = `<button class="nav-btn" id="continue-${tabId}">Continue to ${esc(nextLabel)} →</button>`;
+    const gateMsg = tabId === "plan"
+      ? `<p class="status-note" id="plan-gate-note">Answer all 10 questions above before continuing.</p>`
+      : "";
+    nav.innerHTML = `${gateMsg}<button class="nav-btn" id="continue-${tabId}">Continue to ${esc(nextLabel)} →</button>`;
     panel.appendChild(nav);
     document.getElementById(`continue-${tabId}`).addEventListener("click", () => {
+      if (tabId === "plan" && !planSectionComplete()) return;
       showTab(TABS[idx + 1].id);
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+    if (tabId === "plan") updatePlanContinueNav();
   } else {
     nav.innerHTML = `<div class="callout">You've reached the end. Everything above autosaves as you go, so it's safe to leave and come back. Double check your live links, then upload via Canvas as your Project 1 submission.</div>`;
     panel.appendChild(nav);
@@ -850,6 +874,7 @@ function restoreState() {
 
 let saveTimer = null;
 function scheduleSave() {
+  updatePlanContinueNav();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
@@ -916,7 +941,8 @@ function buildBackupText() {
   lines.push("Make and Showcase:");
   lines.push(`Before (live): ${getVal("lovable-before") || "[not filled in]"}`);
   lines.push(`After (live): ${getVal("lovable-after") || "[not filled in]"}`);
-  lines.push(`Annotated before/after visual link: ${getVal("notion-link") || "[not filled in]"}`);
+  lines.push(`Extra credit - GitHub repo link: ${getVal("github-link") || "[not filled in]"}`);
+  lines.push(`Extra credit - Notion case study link: ${getVal("notion-link") || "[not filled in]"}`);
 
   return lines.join("\n");
 }
