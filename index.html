@@ -55,6 +55,8 @@
   .helptext { font-size: 0.9rem; color: var(--ink-soft); margin: 0 0 10px; }
   ol.steps { padding-left: 20px; margin: 10px 0 0; }
   ol.steps li { margin-bottom: 6px; }
+  ul.examples-list { padding-left: 20px; margin: 10px 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+  ul.examples-list li { margin-bottom: 4px; }
   .badge {
     display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.03em; padding: 2px 9px; border-radius: 999px; margin-bottom: 8px;
@@ -92,11 +94,34 @@
   details.tip { margin-top: 8px; font-size: 0.85rem; color: var(--ink-soft); }
   details.tip summary { cursor: pointer; color: var(--accent); font-weight: 600; }
   details.tip .tip-body { margin-top: 6px; padding: 10px 12px; background: var(--locked-bg); border-radius: 6px; }
+  details.ec-toggle { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  details.ec-toggle summary { cursor: pointer; font-weight: 700; font-size: 0.98rem; color: var(--accent); list-style: none; }
+  details.ec-toggle summary::-webkit-details-marker { display: none; }
+  details.ec-toggle summary::before { content: "▸ "; }
+  details.ec-toggle[open] summary::before { content: "▾ "; }
+  details.ec-toggle .ec-body { margin-top: 12px; }
 
   .callout {
     background: #fff8ea; border: 1px solid #f3c988; border-radius: 8px;
     padding: 10px 14px; font-size: 0.85rem; color: #6b4e14; margin-top: 10px;
   }
+
+  .submit-banner {
+    background: #fdecec; border: 2px solid var(--bad); border-radius: 10px;
+    padding: 18px 20px; margin: 24px 0; color: #5c1a15;
+  }
+  .submit-banner .submit-title {
+    font-size: 1.05rem; font-weight: 800; margin: 0 0 8px; color: var(--bad);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .submit-banner p { margin: 0 0 8px; font-size: 0.92rem; }
+  .submit-banner p:last-child { margin-bottom: 0; }
+  .submit-banner .submit-fine { font-size: 0.8rem; color: #7a2f28; }
+  button.submit-download-btn {
+    background: var(--bad); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 18px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin: 4px 0 10px;
+  }
+  button.submit-download-btn:hover { opacity: 0.9; }
 
   .section-nav { margin-top: 22px; text-align: right; }
   .section-nav .callout { text-align: left; }
@@ -220,7 +245,7 @@ const TABS = [
   { id: "plan",     label: "2. Plan Your Redesign" },
   { id: "make",     label: "3. Make Your Redesigned Pricing Page" },
   { id: "why",      label: "4. Why These Changes Matter" },
-  { id: "showcase", label: "5. Showcase Your Redesign" },
+  { id: "showcase", label: "5. Showcase Your Redesign (Optional/EC)" },
 ];
 
 const tabbarEl = document.getElementById("tabbar-inner");
@@ -268,30 +293,60 @@ function buildStartTab() {
   panel.className = "tab-panel active";
   panel.dataset.tab = "start";
   panel.innerHTML = `
-    <div class="callout">A heads-up before you start: the Make Your Redesigned Pricing Page step uses Lovable's free daily message limit, which only resets once every so many hours. If you leave that step until the day it's due and run out of messages, you may not be able to finish in time. Start that step at least a couple of days before the deadline, not on the due date itself.</div>
+    <div class="callout">It is strongly recommended that you start this and make your redesigned pricing page (Step 3) at least 1.5 days before the deadline. And be sure to follow the instructions throughout the project. You will use an AI tool called Lovable for Step 3, which might run into message limits that take hours or 1 day to reset, which is one main reason why it's important to start early and follow the instructions carefully.</div>
 
     <div class="card">
-      <span class="badge no-ai">No AI</span>
+      <h2>Your Name</h2>
+      <p class="helptext">This gets included in your downloaded answers file so your submission is identifiable.</p>
+      <label class="field-label" for="student-name">Your full name</label>
+      <input type="text" id="student-name" placeholder="First Last">
+    </div>
+
+    <div class="card">
       <h2>Choose Your Company</h2>
-      <p class="helptext">Pick any online subscription company with a plan-selection page that lists prices. Small to mid-sized subscription companies (e.g., Yippee, Nebula, etc) are often a bit easier than the most popular companies (e.g., Netflix) because they often have more room for improvement and don't already use the behavioral pricing principles. But you are welcome to choose any subscription company as long as it hasn't already been taken by another student.</p>
+      <p class="helptext">Pick any online subscription company with a plan-selection page that lists prices. Small to mid-sized subscription companies (e.g., Yippee, Nebula, etc) are often a bit easier than the most popular companies (e.g., Netflix) because they often have more room for improvement and don't already use the behavioral pricing principles. But you are welcome to choose any subscription company as long as you can come up with a few ways to improve the page and as long as it hasn't already been taken by another student.</p>
       <label class="field-label" for="company-name">Which subscription company did you choose?</label>
       <input type="text" id="company-name">
-      <label class="field-label" for="company-url">Link to that company's subscription pricing page</label>
+      <label class="field-label" for="company-url">Link to that company's plan selection page</label>
       <input type="url" id="company-url" placeholder="https://...">
     </div>
 
     <div class="card">
       <span class="badge no-ai">No AI</span>
+      <h2>Brainstorm & Recall Behavioral Pricing Concepts</h2>
+      <p class="helptext">Before looking at competitors, start with your own ideas and what you remember from class.</p>
+
+      <label class="field-label" for="brainstorm-changes">At first glance, what are some changes you could make to improve your company's plan-selection page? Brainstorm at least a handful of changes you would consider making that might help your company (and/or benefit your customers).</label>
+      <textarea id="brainstorm-changes" style="min-height:130px" placeholder="Your answer..."></textarea>
+
+      <label class="field-label" for="principles-recall">Think back to the behavioral pricing lecture and the content we covered in class. What were 2 of the 5 "big behavioral pricing principles" that we covered? Briefly discuss how you could use one of these principles to improve your company's plan-selection page.</label>
+      <textarea id="principles-recall" style="min-height:130px" placeholder="Your answer..."></textarea>
+
+      <label class="field-label" for="examples-ideas">Do any of the following examples give you additional ideas of what you could do to improve pricing on your company's plan-selection page?</label>
+      <ul class="examples-list">
+        <li>Example of making an annual plan more popular by presenting it as "$5/mo billed annually" rather than "$60/yr"</li>
+        <li>Strikethrough pricing example</li>
+        <li>Adding unit prices</li>
+        <li>The bread maker that wasn't being sold, and what happened when they added a more expensive bread maker next to it</li>
+        <li>Netflix using a comparison table</li>
+        <li>The Lyft example (left-digit bias)</li>
+        <li>Changes that Dropbox made (discussion post)</li>
+        <li>What happened when a 6-month subscription was removed, leaving only an annual and monthly subscription (example from Stanley's Teams call)</li>
+        <li>What did JC Penney do that backfired for them?</li>
+        <li>Other changes you made in the group activity (Yippee or Cravory Cookies)</li>
+        <li>What did Hulu and Amazon Prime do to cater to young adults and college students? How might a subscription company reach new customers and cater to several different segments? (Segmentation & Positioning lecture)</li>
+      </ul>
+      <textarea id="examples-ideas" style="min-height:130px" placeholder="Your answer..."></textarea>
+    </div>
+
+    <div class="card">
+      <span class="badge no-ai">No AI</span>
       <h2>Competitor Comparison</h2>
-      <p class="helptext">Find 1-2 of the largest competing subscription companies in the same industry.</p>
-      <label class="field-label" for="competitors">Competitor(s) name + link to their pricing page</label>
-      <textarea id="competitors" placeholder="Competitor 1: name, url&#10;Competitor 2: name, url"></textarea>
-      <label class="field-label" for="positioning-diff">How does your company's brand positioning differ from the competitors'? How does its pricing page differ from theirs?</label>
+      <p class="helptext">Now look outward: one direct competitor, and one subscription company (in this industry or any other) that's ahead of the curve in pricing or marketing, such as Netflix or Spotify.</p>
+      <label class="field-label" for="competitors">Name and link to a competitor's pricing page, and to the ahead-of-the-curve company's pricing page. What is 1 idea either of them gives you for improving your company's plan-selection page?</label>
+      <textarea id="competitors" style="min-height:130px" placeholder="Competitor: name, url&#10;Ahead-of-the-curve company: name, url&#10;Idea: ..."></textarea>
+      <label class="field-label" for="positioning-diff">How does your company's brand positioning differ from the competitor's? How does its pricing page differ from theirs?</label>
       <textarea id="positioning-diff" style="min-height:130px" placeholder="Your answer..."></textarea>
-      <label class="field-label" for="company-improve">What could be improved about your company's plan-selection webpage?</label>
-      <textarea id="company-improve" placeholder="Your answer..."></textarea>
-      <label class="field-label" for="competitor-ideas">Think of at least one idea you could borrow from a competitor, or from any subscription company (in this industry or another) that's ahead of the curve in optimizing its marketing and website, such as Netflix or Spotify. What is that idea, and how could you use it in your redesign or to improve your company's plan-selection page?</label>
-      <textarea id="competitor-ideas" style="min-height:130px" placeholder="Your answer..."></textarea>
     </div>
   `;
   panelsEl.appendChild(panel);
@@ -310,11 +365,11 @@ const QUESTIONS = [
   "Would you make any of the options more salient, vivid, or prominent (e.g., use visual hierarchy)? Would you make any less prominent or harder to find? How?",
   "What are the prices of 2 of the most well-known competitors? And what are the current prices of your company's options? How would your chosen prices compare to each? Would you change your company's subscription prices based on this knowledge or in order to be priced below other reference points?",
   "What else would you change or add on this subscription pricing page?",
-  "List all of the changes you will make to the subscription pricing page. Make sure there are at least 3 total changes, and that at least 2 of the changes are changes to pricing or perceived price/value (e.g., list price, price framing, changing the price of an option, adding another option with a different price, etc). Anything you mentioned that you'd change in B1-B9 should also be included in your list."
+  "\"Your answer\" below is the prompt that AI will use to build your redesign: list all of the changes you will make to the subscription pricing page, and describe each one in a way that's clear and specific enough that AI could make the change correctly without needing to ask you follow-up questions. Make sure there are at least 3 total changes, and that at least 2 of the changes are changes to pricing or perceived price/value. Anything you mentioned that you'd change in B1-B9 should also be included in your list."
 ];
 
 const QUESTION_NOTES = {
-  10: "This started pre-filled with what you wrote in B1 through B9. Edit it down into a clean list of changes, and add anything new. Be specific: this list becomes the actual prompt used to build your redesign with AI in Step 3. For each change, say exactly which price, button, color, or element you're changing and what the new value should be. Be specific enough that a human web designer would know exactly what to do without needing to ask you follow-up questions."
+  10: "This started pre-filled with what you wrote in B1 through B9. Edit it down into a clean, specific list: for each change, say exactly which price, button, color, or element you're changing and what the new value should be."
 };
 
 const MC_CHECKS = {
@@ -352,6 +407,7 @@ Object.keys(MC_CHECKS).forEach(k => { sbMC[k] = { sel: [], checked: false }; });
 let pasteCount = 0;
 let copyCount = 0;
 let modalShown = false;
+let autoDownloadTriggered = false;
 const modal = document.getElementById("paste-modal");
 
 function getAnswer(n) { return (sbAnswers[n - 1] || "").trim(); }
@@ -364,7 +420,7 @@ function buildPlanTab() {
     <div class="card">
       <span class="badge no-ai">No AI</span>
       <h2>Plan Your Redesign</h2>
-      <p class="helptext">Answer these directly, in your own words (1-3 sentences each). No AI. Questions appear one at a time so you're working through them yourself rather than skimming or batch-copying all 10. A few include a quick multiple-choice concept check. You can go back and edit any answer, and you'll get a full review screen before moving on. You must make at least 3 changes total to the current design (see Q10). Q10 will also auto-fill your redesign prompt in Step 3.</p>
+      <p class="helptext">Answer these directly, in your own words (1-3 sentences each). No AI. Questions appear one at a time so you're working through them yourself. A few include a quick multiple-choice concept check. You can go back and edit any answer, and you'll get a full review screen before moving on. You must make at least 3 changes total to the current design (see Q10). Q10 will also auto-fill your redesign prompt in Step 3.</p>
       <div id="sb-container"></div>
     </div>
   `;
@@ -411,6 +467,19 @@ function updatePlanContinueNav() {
   if (note) note.style.display = complete ? "none" : "";
 }
 
+function escAttr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+
+function buildB9Placeholder() {
+  const parts = [];
+  const brainstorm = (getVal("brainstorm-changes") || "").trim();
+  const examples = (getVal("examples-ideas") || "").trim();
+  if (brainstorm) parts.push(`From your brainstorm: ${brainstorm}`);
+  if (examples) parts.push(`From the lecture examples: ${examples}`);
+  return parts.length ? parts.join("  |  ") : "Your answer...";
+}
+
 function buildQuestionHTML(n) {
   const dots = Array.from({ length: QUESTIONS.length }).map((_, i) => {
     const cls = ["dot"];
@@ -421,6 +490,7 @@ function buildQuestionHTML(n) {
 
   const mc = MC_CHECKS[n];
   const mcHtml = mc ? buildMCHtml(n, mc) : "";
+  const placeholder = n === 9 ? buildB9Placeholder() : "Your answer...";
 
   return `
     <div class="sb-progress">${dots}</div>
@@ -429,7 +499,7 @@ function buildQuestionHTML(n) {
       <h3>${esc(QUESTIONS[n - 1])}</h3>
       ${QUESTION_NOTES[n] ? `<div class="callout">${esc(QUESTION_NOTES[n])}</div>` : ""}
       <label class="field-label primary" for="answer-current">Your answer</label>
-      <textarea id="answer-current" placeholder="Your answer..." style="min-height:110px"></textarea>
+      <textarea id="answer-current" placeholder="${escAttr(placeholder)}" style="min-height:110px"></textarea>
       ${mcHtml}
       <div class="sb-nav">
         <button class="nav-btn back" id="sb-back" ${sbIndex === 0 ? "disabled" : ""}>Back</button>
@@ -617,12 +687,12 @@ function buildPartMake() {
     <div class="card">
       <span class="badge ai-ok">AI required (Lovable)</span>
       <h2>Make Your Redesigned Pricing Page</h2>
-      <p class="helptext">You'll build two Lovable projects: a "before" clone of the original, and an "after" that starts from that same clone and applies your redesign. Each project publishes to its own live web address directly from Lovable, so there's nothing to download or separately host.</p>
+      <p class="helptext">You'll build two Lovable projects: a "before" clone of the original plan selection/pricing page, and an "after" (your redesign) that starts from that same clone and applies your redesign. Each project publishes to its own live web address directly from Lovable.</p>
 
-      <div class="callout">Two things trip people up most. First, forgetting to attach the screenshot before sending the first message. If your result looks like a generic pricing page instead of a copy of yours, scroll up in the chat and check whether the image actually attached. Second, running out of Lovable's free daily messages before you're done. Manage this by keeping each project to as few messages as possible: for before.html, one message to build it and at most one follow-up to fix anything, with every fix listed in that single follow-up rather than sent one at a time. Do the same for after.html: let the Redesign Prompt do the work in one message, and if you need a follow-up, bundle every change you want into that one message before you send it and publish.</div>
+      <div class="callout">Two things trip people up most. First, forgetting to attach the screenshot before sending the first message. If your result looks like a generic pricing page instead of a copy of yours, scroll up in the chat and check whether the image actually attached. Second, running out of Lovable's free daily messages before you're done. Manage this by keeping each project to as few messages as possible: for before.html, one message to build it and at most one follow-up to fix anything, with every fix listed in that single follow-up rather than sent one at a time. For after.html, most people will need a few follow-up messages to get the redesign right; bundle every change you want into a single message when possible. If you need more after that, you'll likely have enough credits for another follow-up, and more once your quota resets after some hours.</div>
 
       <div class="step-block">
-        <h3>Step 1: Screenshot the original, remove logos/images</h3>
+        <h3>Step A: Screenshot the original, remove logos/images</h3>
         <p class="helptext">Take a full-page screenshot of your company's current pricing page. If it includes any logos or product images, which may be copyrighted, either avoid including them in your screenshot in the first place, or try to remove them before using it with Lovable or any AI tool.</p>
         <details class="tip">
           <summary>Easiest way to remove a logo/image</summary>
@@ -631,37 +701,35 @@ function buildPartMake() {
       </div>
 
       <div class="step-block">
-        <h3>Step 2: Set up Lovable</h3>
-        <p class="helptext">Go to <a href="https://lovable.dev" target="_blank" rel="noopener">lovable.dev</a> and sign up free (no credit card needed).</p>
-      </div>
-
-      <div class="step-block">
-        <h3>Step 3: Build "before.html" as its own project</h3>
+        <h3>Step B: Set up Lovable and build "before.html"</h3>
+        <p class="helptext">Go to <a href="https://lovable.dev" target="_blank" rel="noopener">lovable.dev</a> and sign up free (no credit card needed). This automatically starts a new project.</p>
         <ol class="steps">
-          <li>In Lovable, start a new project.</li>
           <li>Attach your cleaned screenshot to the chat: click the "+" button near the chat box and choose "Attach files," or drag the image directly into the chat box, or paste it in with Ctrl/Cmd+V.</li>
-          <li>Paste the Clone Prompt below as your message, then send it.</li>
+          <li><strong>In that same message, also paste the Clone Prompt below, then send it.</strong> The screenshot and the Clone Prompt both need to go out together as one message.</li>
           <li>Compare the result to your screenshot. If anything's off, you can send one follow-up message, but list everything you want fixed in that single message (e.g., "fix the header color, move the price down, and fix the button spacing") rather than sending several separate messages, to avoid using up your daily message credits.</li>
-          <li>Once it looks right, click Publish (usually top right) to get your live "before" address. Copy that link; you'll paste it in the Showcase Your Redesign step. Don't make further changes to this project after this; you want this version to stay as your fixed "before."</li>
+          <li>Once it looks right, click Publish (usually top right) to get your live "before" address. Copy that link and paste it into the Live URL field below. Don't make further changes to this project after this; you want this version to stay as your fixed "before."</li>
         </ol>
         <div class="copy-row"><button class="copy-btn" id="copy-clone-prompt">Copy Clone Prompt</button></div>
         ${buildChecklistHtml("before", [
-          "I started a brand-new Lovable project for this.",
-          "I attached my cleaned screenshot before sending the Clone Prompt.",
+          "I attached my cleaned screenshot and sent the Clone Prompt in the same message (my first Lovable message).",
           "I clicked Publish and copied the live URL.",
         ])}
+        <label class="field-label" for="make-before-url">Live URL: before.html</label>
+        <input type="url" id="make-before-url" placeholder="https://....lovable.app">
       </div>
 
       <div class="step-block">
-        <h3>Step 4: Build "after.html" by remixing "before.html"</h3>
+        <h3>Step C: Build "after.html" by remixing "before.html"</h3>
         <p class="helptext">Don't start a new project from your screenshot again. Instead, use Lovable's Remix feature to fork your finished before.html project: its code carries over, so your redesign builds on the clone you already got working.</p>
         <ol class="steps">
           <li>Open your before.html project in Lovable. Find the "..." menu (in the project sidebar, or under Project actions) and choose Remix.</li>
           <li>Name the copy something like "pricing-after" so you don't mix it up with "before," and confirm.</li>
           <li>In this new, remixed project, paste the Redesign Prompt below as your message (it auto-fills with your Q10 list of changes from Step 2), then send it. You don't need to attach the screenshot again; the code is already there.</li>
-          <li>Once it looks right, click Publish to get a separate live "after" address. Copy that link; you'll paste it in the Showcase Your Redesign step.</li>
+          <li>Once it looks right, click Publish to get a separate live "after" address. Copy that link and paste it into the Live URL field below. If you want to make more changes, bundle everything into one follow-up message when possible; you'll likely have enough credits for another follow-up, and more once your quota resets. Click Publish again after any change so your live link reflects the latest version.</li>
         </ol>
         <div class="copy-row"><button class="copy-btn" id="copy-redesign-prompt">Copy Redesign Prompt</button></div>
+        <label class="field-label" for="make-after-url">Live URL: after.html</label>
+        <input type="url" id="make-after-url" placeholder="https://....lovable.app">
         ${buildChecklistHtml("after", [
           "I used Remix on my before.html project, instead of starting over from the screenshot.",
           "I renamed the remixed copy so I can tell it apart from before.html.",
@@ -671,11 +739,11 @@ function buildPartMake() {
       </div>
 
       <div class="step-block">
-        <h3>Step 5: Keep an eye on your daily messages</h3>
+        <h3>Step D: Keep an eye on your daily messages</h3>
         <div class="callout">Lovable's free plan gives you a limited number of messages per day total, across all your projects, with no credit card required. Between getting before.html accurate and iterating on after.html, you'll likely use a good chunk of that budget; it doesn't need to be pixel-perfect. Showing that you iterated and improved it matters more than a flawless result. If a follow-up is needed, be specific and combine everything you want changed into one message rather than sending several. After any follow-up change, click Publish again so your live link reflects the latest version; the URL itself doesn't change. If you run out for the day, your quota resets after some hours.</div>
       </div>
 
-      <p class="helptext">Once both projects are published and checked off above, you're done here. Head to the Showcase Your Redesign step to paste your two live links.</p>
+      <p class="helptext">Once both projects are published, checked off, and their live URLs entered above, you're done with this step.</p>
     </div>
   `;
   panelsEl.appendChild(panel);
@@ -697,14 +765,14 @@ function buildWhyTab() {
       <p class="helptext">Pick 2 of your changes and, for each, briefly explain why you made it and how it would affect consumer perceptions or behavior. Would it increase average order value (AOV)? Conversion rate? One paragraph each.</p>
       <h3 class="subhead">Change 1</h3>
       <label class="field-label" for="d1-concept">Which behavioral pricing concept does this connect to?</label>
-      <input type="text" id="d1-concept" placeholder="e.g. left-digit bias">
-      <label class="field-label" for="d1-explain">Explanation (impact on perceptions/behavior, AOV, conversion)</label>
+      <input type="text" id="d1-concept" placeholder="">
+      <label class="field-label" for="d1-explain">Explanation of how it would impact visitors to this subscription page & why (impact on perceptions, behavior, % who choose a particular plan, AOV, etc)</label>
       <textarea id="d1-explain" style="min-height:120px" placeholder="One paragraph..."></textarea>
       <h3 class="subhead">Change 2</h3>
       <label class="field-label" for="d2-concept">Which behavioral pricing concept does this connect to?</label>
       <input type="text" id="d2-concept" placeholder="e.g. strikethrough pricing">
-      <label class="field-label" for="d2-explain">Explanation (impact on perceptions/behavior, AOV, conversion)</label>
-      <textarea id="d2-explain" style="min-height:120px" placeholder="One paragraph..."></textarea>
+      <label class="field-label" for="d2-explain">Explanation of how it would impact visitors to this subscription page & why (impact on perceptions, behavior, % who choose a particular plan, AOV, etc)</label>
+      <textarea id="d2-explain" style="min-height:120px" placeholder=""></textarea>
 
       <h3 class="subhead">Academic Evidence</h3>
       <p class="helptext">Find one academic journal article related to one of the concepts you used in your redesign. Briefly discuss what the study found and what it means for your redesign. Cite it properly (APA is fine). Try <a href="https://scholar.google.com" target="_blank" rel="noopener">Google Scholar</a>. For example, if one of your changes was left-digit bias, try searching for "left digit bias" in quotes as your first attempt. If that doesn't turn up much, try it without the quotes, or try a related term instead.</p>
@@ -713,8 +781,17 @@ function buildWhyTab() {
       <label class="field-label" for="e-argument">What did the study find, and what does it mean for your redesign?</label>
       <textarea id="e-argument" style="min-height:110px" placeholder="Your answer..."></textarea>
     </div>
+
+    <div class="submit-banner">
+      <p class="submit-title">⚠ Don't forget to submit</p>
+      <p>Step 5 is optional extra credit — for most of you, <strong>this is the last required step</strong>. To actually turn in Project 1, you must download your answers file and upload it to Canvas.</p>
+      <button class="submit-download-btn" id="download-backup-why">Download my answers now (.txt)</button>
+      <p>Then go to <strong>Canvas → Project 1</strong> and upload that .txt file, along with your two live links (before.html and after.html) from Step 3.</p>
+      <p class="submit-fine">Note: if you've clicked download more than once, your Downloads folder may have several versions of this file (Chrome/etc. add "(1)", "(2)", etc. to the name). Upload the most recent one.</p>
+    </div>
   `;
   panelsEl.appendChild(panel);
+  document.getElementById("download-backup-why").addEventListener("click", downloadBackup);
 }
 
 // =====================================================================
@@ -725,75 +802,58 @@ function buildPartShowcase() {
   panel.className = "tab-panel";
   panel.dataset.tab = "showcase";
   panel.innerHTML = `
-    <div class="card">
-      <span class="badge no-ai">No AI</span>
-      <h2>Your Live Links</h2>
-      <p class="helptext">Both pages are already live: publishing them from Lovable in Step 3 is what put them online. Paste those two links below (each one ends in ".lovable.app" unless you gave it a custom domain).</p>
-      <label class="field-label" for="lovable-before">Live URL: before.html</label>
-      <input type="url" id="lovable-before" placeholder="https://....lovable.app">
-      <label class="field-label" for="lovable-after">Live URL: after.html</label>
-      <input type="url" id="lovable-after" placeholder="https://....lovable.app">
-    </div>
-
-    <div class="card">
-      <span class="badge no-ai">Submission</span>
-      <h2>Submit Your Answers</h2>
-      <p class="helptext">Once both live links above are filled in, download a complete record of everything you entered across all 4 earlier steps. Upload this file together with your two live links to Canvas as your Project 1 submission.</p>
-      <button class="copy-btn" id="download-submission">Download Your Answers (.txt)</button>
-      <p class="status-note" id="submission-note"></p>
-    </div>
+    <div class="callout">Everything on this page is optional, for extra credit. Nothing here is required to submit Project 1.</div>
 
     <div class="card">
       <span class="badge extra">Optional, extra credit</span>
       <h2>Showcase Your Work</h2>
-      <p class="helptext">Turning your before/after work into something portfolio-ready for internships or job applications is optional and worth extra credit. If you choose to do the extra credit, you can choose one or the other or do both.</p>
-      <div class="subtab-bar">
-        <button class="subtab-btn active" id="subtab-btn-github" data-subtab="github">Option 1: GitHub Repo (1 pt EC)</button>
-        <button class="subtab-btn" id="subtab-btn-visual" data-subtab="visual">Option 2: Visual Case Study (2 pts EC)</button>
-      </div>
+      <p class="helptext">Turning your before/after work into something portfolio-ready for internships or job applications is optional and worth extra credit. Pick any, all, or none of these.</p>
 
-      <div class="subtab-panel active" data-subtab="github">
-        <p class="helptext">Worth 1 point of extra credit. Put both .html files in a repository so anyone can see the actual code behind your redesign. This is likely the easier option overall, even if you've never used GitHub before.</p>
-        <ol class="steps">
-          <li>Create a free account at <a href="https://github.com" target="_blank" rel="noopener">github.com</a> if you don't already have one.</li>
-          <li>Click "New" to create a new repository (any name is fine, e.g., "subscription-pricing-redesign").</li>
-          <li>On the repository page, click "Add file → Upload files" and drag in your before.html and after.html. This all happens in the browser; no command line needed.</li>
-          <li>Copy the repository's URL from your browser's address bar.</li>
-        </ol>
-        <label class="field-label" for="github-link">Your GitHub repo URL</label>
-        <input type="url" id="github-link" placeholder="https://github.com/...">
-      </div>
+      <details class="ec-toggle">
+        <summary>Option 1: GitHub Repo (1 pt EC)</summary>
+        <div class="ec-body">
+          <p class="helptext">Put both .html files in a repository so anyone can see the actual code behind your redesign. This is likely the easier option overall, even if you've never used GitHub before.</p>
+          <ol class="steps">
+            <li>Create a free account at <a href="https://github.com" target="_blank" rel="noopener">github.com</a> if you don't already have one.</li>
+            <li>Click "New" to create a new repository (any name is fine, e.g., "subscription-pricing-redesign").</li>
+            <li>On the repository page, click "Add file → Upload files" and drag in your before.html and after.html. This all happens in the browser; no command line needed.</li>
+            <li>Copy the repository's URL from your browser's address bar.</li>
+          </ol>
+          <label class="field-label" for="github-link">Your GitHub repo URL</label>
+          <input type="url" id="github-link" placeholder="https://github.com/...">
+        </div>
+      </details>
 
-      <div class="subtab-panel" data-subtab="visual">
-        <p class="helptext">Worth 2 points of extra credit. Make one polished, visual case-study image: a single picture a stranger could understand in 10 seconds.</p>
-        <ol class="steps">
-          <li>Take a screenshot of your "before" page and your "after" page.</li>
-          <li>Paste both into a free design tool (see below) side by side.</li>
-          <li>Draw arrows or callout boxes pointing at what changed, each labeled with the behavioral pricing principle behind it (e.g., an arrow to the new price pointing at "$9.99" labeled "left-digit bias").</li>
-          <li>Add a short "Skills used" line at the bottom (e.g., behavioral pricing analysis, prompting an AI page builder like Lovable, visual/UI design).</li>
-          <li>Export it as one image.</li>
-          <li>Create a free <a href="https://notion.so" target="_blank" rel="noopener">Notion</a> page (Notion works well here because it doubles as a simple portfolio page). Paste in your annotated image, add a 1-2 sentence summary of the redesign above it, and set the page's share setting to "anyone with the link can view" (not published to the public web). Copy that page's link below.</li>
-        </ol>
-        <p class="helptext">Good free tools for the arrows and labels: <a href="https://canva.com" target="_blank" rel="noopener">Canva</a> (easiest — has drag-and-drop arrow and text tools made for this kind of before/after layout) or <a href="https://slides.google.com" target="_blank" rel="noopener">Google Slides</a> (works fine if you already have a Google account: paste the screenshots onto one slide and use the shape tool for arrows). <a href="https://figma.com" target="_blank" rel="noopener">Figma</a> is a solid third option if you're already comfortable with it, but has more of a learning curve for something this small. We don't recommend trying to have Lovable generate this part: it can't take real screenshots of your two pages or place arrows on exact pixels, so it would likely just guess at a rebuilt version instead of showing your actual work.</p>
-        <label class="field-label" for="notion-link">Your Notion case study link</label>
-        <input type="url" id="notion-link" placeholder="https://notion.so/...">
-      </div>
+      <details class="ec-toggle">
+        <summary>Option 2: Visual Case Study (2 pts EC)</summary>
+        <div class="ec-body">
+          <p class="helptext">Make one polished, visual case-study image: a single picture a stranger could understand in 10 seconds.</p>
+          <ol class="steps">
+            <li>Take a screenshot of your "before" page and your "after" page.</li>
+            <li>Paste both into a free design tool (see below) side by side.</li>
+            <li>Draw arrows or callout boxes pointing at what changed, each labeled with the behavioral pricing principle behind it (e.g., an arrow to the new price pointing at "$9.99" labeled "left-digit bias").</li>
+            <li>Add a short "Skills used" line at the bottom (behavioral pricing analysis, Lovable, UI design).</li>
+            <li>Export it as one image.</li>
+            <li>Create a free <a href="https://notion.so" target="_blank" rel="noopener">Notion</a> page (Notion works well here because it doubles as a simple portfolio page). Paste in your annotated image, add a 1-2 sentence summary of the redesign above it, and set the page's share setting to "anyone with the link can view" (not published to the public web). Copy that page's link below.</li>
+          </ol>
+          <p class="helptext">Good free tools for the arrows and labels: <a href="https://canva.com" target="_blank" rel="noopener">Canva</a> (easiest — has drag-and-drop arrow and text tools made for this kind of before/after layout) or <a href="https://slides.google.com" target="_blank" rel="noopener">Google Slides</a> (works fine if you already have a Google account: paste the screenshots onto one slide and use the shape tool for arrows). <a href="https://figma.com" target="_blank" rel="noopener">Figma</a> is a solid third option if you're already comfortable with it, but has more of a learning curve for something this small. We don't recommend trying to have Lovable generate this part: it can't take real screenshots of your two pages or place arrows on exact pixels, so it would likely just guess at a rebuilt version instead of showing your actual work.</p>
+          <label class="field-label" for="notion-link">Your Notion case study link</label>
+          <input type="url" id="notion-link" placeholder="https://notion.so/...">
+        </div>
+      </details>
+
+    </div>
+
+    <div class="submit-banner">
+      <p class="submit-title">⚠ Don't forget to submit</p>
+      <p>Make sure you've downloaded your answers file and uploaded it to Canvas — that's what actually turns in Project 1, not this webpage.</p>
+      <button class="submit-download-btn" id="download-backup-showcase">Download my answers now (.txt)</button>
+      <p>Go to <strong>Canvas → Project 1</strong> and upload that .txt file, along with your two live links (before.html and after.html) from Step 3.</p>
+      <p class="submit-fine">Note: if you've clicked download more than once, your Downloads folder may have several versions of this file (Chrome/etc. add "(1)", "(2)", etc. to the name). Upload the most recent/updated one.</p>
     </div>
   `;
   panelsEl.appendChild(panel);
-  panel.querySelectorAll(".subtab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const target = btn.dataset.subtab;
-      panel.querySelectorAll(".subtab-btn").forEach(b => b.classList.toggle("active", b.dataset.subtab === target));
-      panel.querySelectorAll(".subtab-panel").forEach(p => p.classList.toggle("active", p.dataset.subtab === target));
-    });
-  });
-  document.getElementById("download-submission").addEventListener("click", () => {
-    downloadBackup();
-    const note = document.getElementById("submission-note");
-    note.textContent = "Downloaded. Check your downloads folder for behavioral-pricing-backup.txt.";
-    note.style.color = "#1f7a3d";
-  });
+  document.getElementById("download-backup-showcase").addEventListener("click", downloadBackup);
 }
 
 // =====================================================================
@@ -814,12 +874,17 @@ function appendSectionNav(tabId) {
     panel.appendChild(nav);
     document.getElementById(`continue-${tabId}`).addEventListener("click", () => {
       if (tabId === "plan" && !planSectionComplete()) return;
+      if (tabId === "why" && !autoDownloadTriggered) {
+        downloadBackup();
+        autoDownloadTriggered = true;
+        scheduleSave();
+      }
       showTab(TABS[idx + 1].id);
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
     if (tabId === "plan") updatePlanContinueNav();
   } else {
-    nav.innerHTML = `<div class="callout">You've reached the end. Everything above autosaves as you go, so it's safe to leave and come back. Double check your live links, then upload via Canvas as your Project 1 submission.</div>`;
+    nav.innerHTML = `<div class="callout">You've reached the end. Everything above autosaves as you go, so it's safe to leave and come back. Don't forget the red submission box above: download your answers (.txt) and upload it to Canvas with your two live links to submit Project 1.</div>`;
     panel.appendChild(nav);
   }
 }
@@ -844,7 +909,7 @@ function collectState() {
     if (el.id === "answer-current") return; // handled via sbAnswers
     values[el.id] = el.type === "checkbox" ? el.checked : el.value;
   });
-  return { values, sbIndex, sbReview, sbEditingFromReview, sbAnswers, sbMC, b10Prefilled, pasteCount, copyCount };
+  return { values, sbIndex, sbReview, sbEditingFromReview, sbAnswers, sbMC, b10Prefilled, pasteCount, copyCount, autoDownloadTriggered };
 }
 
 function restoreState() {
@@ -859,6 +924,7 @@ function restoreState() {
       else if (val) { el.value = val; }
     });
     pasteCount = state.pasteCount || 0;
+    autoDownloadTriggered = !!state.autoDownloadTriggered;
     copyCount = state.copyCount || 0;
     if (Array.isArray(state.sbAnswers)) sbAnswers = state.sbAnswers;
     if (state.sbMC) sbMC = state.sbMC;
@@ -900,18 +966,22 @@ function randToken() { return Math.random().toString(36).slice(2, 6); }
 function buildBackupText() {
   const lines = [];
   lines.push("Behavioral Pricing Assignment: Backup Copy");
+  lines.push(`Name: ${getVal("student-name") || "[not filled in]"}`);
   lines.push(`Downloaded: ${new Date().toISOString()}`);
   const activityCode = `${randToken()}-cp${pasteCount}-${randToken()}-cy${copyCount}-${randToken()}`;
   lines.push(`Activity code: ${activityCode}`);
+  lines.push(`Live URL - before.html: ${getVal("make-before-url") || "[not filled in]"}`);
+  lines.push(`Live URL - after.html: ${getVal("make-after-url") || "[not filled in]"}`);
   lines.push("");
 
   lines.push("Getting Started:");
   lines.push(`Company: ${getVal("company-name") || "[not filled in]"}`);
   lines.push(`Pricing page URL: ${getVal("company-url") || "[not filled in]"}`);
-  lines.push(`Competitors: ${getVal("competitors") || "[not filled in]"}`);
+  lines.push(`Brainstormed changes: ${getVal("brainstorm-changes") || "[not filled in]"}`);
+  lines.push(`Behavioral pricing principles recalled: ${getVal("principles-recall") || "[not filled in]"}`);
+  lines.push(`Ideas from lecture examples: ${getVal("examples-ideas") || "[not filled in]"}`);
+  lines.push(`Competitor / ahead-of-the-curve company + idea: ${getVal("competitors") || "[not filled in]"}`);
   lines.push(`Positioning/page differences: ${getVal("positioning-diff") || "[not filled in]"}`);
-  lines.push(`What could be improved: ${getVal("company-improve") || "[not filled in]"}`);
-  lines.push(`Ideas borrowed from elsewhere: ${getVal("competitor-ideas") || "[not filled in]"}`);
   lines.push("");
 
   lines.push("Plan Your Redesign:");
@@ -938,11 +1008,9 @@ function buildBackupText() {
   lines.push(`Discussion: ${getVal("e-argument") || "[not filled in]"}`);
   lines.push("");
 
-  lines.push("Make and Showcase:");
-  lines.push(`Before (live): ${getVal("lovable-before") || "[not filled in]"}`);
-  lines.push(`After (live): ${getVal("lovable-after") || "[not filled in]"}`);
-  lines.push(`Extra credit - GitHub repo link: ${getVal("github-link") || "[not filled in]"}`);
-  lines.push(`Extra credit - Notion case study link: ${getVal("notion-link") || "[not filled in]"}`);
+  lines.push("Showcase (Extra Credit, optional):");
+  lines.push(`GitHub repo link: ${getVal("github-link") || "[not filled in]"}`);
+  lines.push(`Notion case study link: ${getVal("notion-link") || "[not filled in]"}`);
 
   return lines.join("\n");
 }
