@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 1: Pricing a Subscription Using Behavioral Pricing Principles</title>
+<style>
+  :root {
+    --bg: #f7f5f2;
+    --card: #ffffff;
+    --ink: #1f2328;
+    --ink-soft: #565f6b;
+    --accent: #1f5c4b;
+    --accent-soft: #e5efe9;
+    --border: #dfe3e7;
+    --radius: 10px;
+    --locked-bg: #f2f1ee;
+    --good: #1f7a3d;
+    --bad: #a3312a;
+    --good-bg: #eaf6ee;
+    --bad-bg: #fdecec;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header { background: var(--accent); color: #fff; padding: 26px 20px; }
+  header .wrap { max-width: 940px; margin: 0 auto; }
+  header h1 { margin: 0 0 6px; font-size: 1.4rem; }
+  header p { margin: 0; opacity: 0.9; font-size: 0.92rem; }
+
+  .tabbar { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .tabbar .wrap { max-width: 940px; margin: 0 auto; display: flex; overflow-x: auto; }
+  .tab-btn {
+    background: none; border: none; padding: 14px 16px; font-size: 0.85rem; font-weight: 600;
+    color: var(--ink-soft); cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn .tab-index {
+    display: inline-block; font-size: 0.7rem; background: var(--accent-soft); color: var(--accent);
+    border-radius: 999px; padding: 1px 7px; margin-right: 6px;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; padding: 24px 20px 40px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+  .card h2 { margin-top: 0; font-size: 1.15rem; }
+  .card h3.subhead { font-size: 1rem; margin: 20px 0 4px; color: var(--accent); }
+  .helptext { font-size: 0.9rem; color: var(--ink-soft); margin: 0 0 10px; }
+  ol.steps { padding-left: 20px; margin: 10px 0 0; }
+  ol.steps li { margin-bottom: 6px; }
+  ul.examples-list { padding-left: 20px; margin: 10px 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+  ul.examples-list li { margin-bottom: 4px; }
+  .badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 2px 9px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .badge.no-ai { background: var(--bad-bg); color: var(--bad); }
+  .badge.ai-ok { background: var(--accent-soft); color: var(--accent); }
+  .badge.extra { background: #f3e8ff; color: #6b21a8; }
+  .subtab-bar { display: flex; gap: 8px; margin: 12px 0 16px; flex-wrap: wrap; }
+  .subtab-btn {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px;
+    font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer;
+  }
+  .subtab-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .subtab-panel { display: none; }
+  .subtab-panel.active { display: block; }
+
+  .copy-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+  button.copy-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 16px; font-size: 0.88rem; cursor: pointer; font-weight: 600;
+  }
+  button.copy-btn:hover { opacity: 0.92; }
+  button.copy-btn.copied { background: var(--good); }
+
+  textarea, input[type=text], input[type=url] {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+    font-family: inherit; font-size: 0.95rem; resize: vertical;
+  }
+  textarea { min-height: 90px; }
+  label.field-label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+
+  .step-block { border-left: 3px solid var(--accent-soft); padding-left: 16px; margin: 18px 0; }
+  .step-block h3 { margin: 0 0 6px; font-size: 1rem; }
+
+  details.tip { margin-top: 8px; font-size: 0.85rem; color: var(--ink-soft); }
+  details.tip summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+  details.tip .tip-body { margin-top: 6px; padding: 10px 12px; background: var(--locked-bg); border-radius: 6px; }
+  details.ec-toggle { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  details.ec-toggle summary { cursor: pointer; font-weight: 700; font-size: 0.98rem; color: var(--accent); list-style: none; }
+  details.ec-toggle summary::-webkit-details-marker { display: none; }
+  details.ec-toggle summary::before { content: "▸ "; }
+  details.ec-toggle[open] summary::before { content: "▾ "; }
+  details.ec-toggle .ec-body { margin-top: 12px; }
+
+  .callout {
+    background: #fff8ea; border: 1px solid #f3c988; border-radius: 8px;
+    padding: 10px 14px; font-size: 0.85rem; color: #6b4e14; margin-top: 10px;
+  }
+
+  .submit-banner {
+    background: #fdecec; border: 2px solid var(--bad); border-radius: 10px;
+    padding: 18px 20px; margin: 24px 0; color: #5c1a15;
+  }
+  .submit-banner .submit-title {
+    font-size: 1.05rem; font-weight: 800; margin: 0 0 8px; color: var(--bad);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .submit-banner p { margin: 0 0 8px; font-size: 0.92rem; }
+  .submit-banner p:last-child { margin-bottom: 0; }
+  .submit-banner .submit-fine { font-size: 0.8rem; color: #7a2f28; }
+  button.submit-download-btn {
+    background: var(--bad); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 18px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin: 4px 0 10px;
+  }
+  button.submit-download-btn:hover { opacity: 0.9; }
+
+  .section-nav { margin-top: 22px; text-align: right; }
+  .section-nav .callout { text-align: left; }
+
+  .checklist { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
+  .checklist-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--accent); margin-bottom: 6px; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; margin-bottom: 6px; }
+  .checklist-item input { margin-top: 3px; }
+  .checklist-item:has(input:checked) span { color: var(--good); text-decoration: line-through; }
+
+  /* ---- Section B quiz ---- */
+  .sb-progress { display: flex; gap: 6px; margin-bottom: 16px; }
+  .sb-progress .dot { width: 20px; height: 6px; border-radius: 4px; background: var(--border); }
+  .sb-progress .dot.done { background: var(--accent); }
+  .sb-progress .dot.current { background: var(--accent); outline: 2px solid var(--accent-soft); }
+  .sb-qcard { border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; background: #fff; }
+  .sb-qcard .q-num { font-size: 0.78rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.03em; }
+  .sb-qcard h3 { margin: 4px 0 14px; font-size: 1.1rem; }
+  .sb-qcard label.field-label.primary { font-size: 0.95rem; margin-top: 0; }
+  .sb-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .sb-nav .status-msg { font-size: 0.82rem; color: var(--bad); }
+  .status-note { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 8px; }
+  .section-nav .status-note { text-align: right; }
+  button.nav-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 20px; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+  }
+  button.nav-btn.back { background: #fff; color: var(--ink-soft); border: 1px solid var(--border); }
+  button.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .mc-widget { background: var(--locked-bg); border-radius: 8px; padding: 10px 14px; margin: 16px 0 0; }
+  .mc-widget .mc-label {
+    font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .mc-widget p.mc-prompt { margin: 0 0 8px; font-size: 0.85rem; font-weight: 600; color: var(--ink); }
+  .mc-option { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.82rem; }
+  .mc-option input { margin-top: 3px; }
+  .mc-feedback { margin-top: 8px; padding: 8px 10px; border-radius: 6px; font-size: 0.8rem; display: none; }
+  .mc-feedback.show { display: block; }
+  .mc-feedback.correct { background: var(--good-bg); color: var(--good); }
+  .mc-feedback.incorrect { background: var(--bad-bg); color: var(--bad); }
+  button.check-btn {
+    background: #fff; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px;
+    padding: 6px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; margin-top: 2px;
+  }
+
+  /* ---- Review screen ---- */
+  .review-item { border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; }
+  .review-item .review-head { display: flex; justify-content: space-between; align-items: center; }
+  .review-item .review-head h4 { margin: 0; font-size: 0.9rem; }
+  .review-item .review-answer { font-size: 0.88rem; color: var(--ink-soft); margin-top: 6px; white-space: pre-wrap; }
+  button.edit-link { background: none; border: none; color: var(--accent); text-decoration: underline; cursor: pointer; font-size: 0.82rem; }
+
+  .backup-note {
+    max-width: 940px; margin: 0 auto; padding: 4px 20px 0;
+    font-size: 0.82rem; color: var(--ink-soft); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  button.backup-btn {
+    background: #fff; color: var(--ink-soft); border: 1px solid var(--border); border-radius: 6px;
+    padding: 7px 14px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+  }
+  button.backup-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(20,20,20,0.45); display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+  .modal-backdrop.show { display: flex; }
+  .modal { background: #fff; border-radius: var(--radius); max-width: 420px; padding: 22px 24px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+  .modal h4 { margin-top: 0; }
+  .modal button { margin-top: 14px; background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 9px 18px; cursor: pointer; font-weight: 600; }
+
+  .saved-note { font-size: 0.78rem; color: var(--accent); opacity: 0; transition: opacity 0.3s; }
+  .saved-note.show { opacity: 1; }
+
+  .model-diagram { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0 18px; }
+  .model-card { flex: 1; min-width: 180px; border: 1px solid var(--border); border-radius: 8px; padding: 14px; background: #fbfbfa; }
+  .model-card h4 { margin: 0 0 4px; font-size: 0.92rem; color: var(--accent); }
+  .model-card p { margin: 0; font-size: 0.82rem; color: var(--ink-soft); }
+
+  #notion-output { margin-top: 16px; width: 100%; min-height: 240px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+
+  footer { text-align: center; font-size: 0.8rem; color: var(--ink-soft); padding: 14px 20px 40px; }
+
+  /* point values + rubric */
+  .pts {
+    display: inline-block; font-size: 0.72rem; font-weight: 800; padding: 2px 10px; border-radius: 999px;
+    background: #fff3d6; color: #7a4b00; border: 1px solid #f0c36d; margin-left: 8px; white-space: nowrap;
+    vertical-align: middle; letter-spacing: 0.01em; text-transform: none;
+  }
+  .pts.req { background: #e8eefc; color: #1f3a8a; border-color: #b9c8f0; }
+  .pts.part { background: #f1f3f4; color: #4b5563; border-color: #d4d8dc; font-weight: 700; }
+  .pts.ec { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+  .rubric-btn {
+    background: #fff; color: var(--accent); border: none; border-radius: 8px; padding: 10px 18px;
+    font-size: 0.92rem; font-weight: 800; cursor: pointer; margin-top: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  .rubric-btn:hover { opacity: 0.93; }
+  .tab-btn.rubric-tab { margin-left: auto; color: var(--accent); }
+  .tab-btn.rubric-tab::before { content: "\1F4CB  "; }
+  .rubric-note {
+    background: #e8eefc; border: 1px solid #b9c8f0; border-radius: 8px; padding: 10px 14px;
+    font-size: 0.88rem; color: #1f3a8a; margin-top: 10px;
+  }
+  .rubric-note a, .rubric-note button.linklike {
+    background: none; border: none; padding: 0; font: inherit; font-weight: 800; color: #1f3a8a;
+    text-decoration: underline; cursor: pointer;
+  }
+  .modal.rubric { max-width: 880px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 26px 30px; }
+  .modal.rubric h2 { margin: 0 0 4px; font-size: 1.3rem; }
+  .modal.rubric h3 { margin: 22px 0 6px; font-size: 1.02rem; color: var(--accent); }
+  .modal.rubric p, .modal.rubric li { font-size: 0.9rem; }
+  .modal.rubric table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 0.86rem; }
+  .modal.rubric th, .modal.rubric td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  .modal.rubric th { background: var(--accent-soft); color: var(--accent); }
+  .modal.rubric td.num { white-space: nowrap; font-weight: 800; text-align: center; }
+  .modal.rubric tr.total td { background: #f6f7f8; font-weight: 800; }
+  .modal.rubric .rubric-close { margin-top: 18px; }
+  .pts[data-rub] { cursor: help; }
+  #rub-tip {
+    position: fixed; z-index: 1000; max-width: 360px; background: #1f2328; color: #fff; border-radius: 8px;
+    padding: 10px 14px; font-size: 0.8rem; line-height: 1.4; box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    display: none; pointer-events: none; font-weight: 400; text-align: left; white-space: normal;
+  }
+  #rub-tip strong.t { display: block; margin-bottom: 4px; color: #ffd98a; }
+  #rub-tip ul { margin: 0; padding-left: 16px; }
+  #rub-tip p { margin: 0 0 4px; }
+  @media print { header, .tabbar, .backup-note, footer { display: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Project 1: Pricing a Subscription Using Behavioral Pricing Principles</h1>
+    <p>Imagine you are a marketing consultant hired by a subscription company to improve its plan-selection page. Work through the 5 steps below in order.</p>
+    <button class="rubric-btn" data-open-rubric>📋 View the Grading Rubric &amp; Point Values (60 pts)</button>
+  </div>
+</header>
+
+<div class="tabbar"><div class="wrap" id="tabbar-inner"></div></div>
+
+<div class="wrap">
+  <div id="panels"></div>
+</div>
+
+<div class="backup-note">
+  <span>Your answers autosave in this browser as you go. If you're staying on the same device and browser, you don't need to do anything else.</span>
+  <button class="backup-btn" id="download-backup">Download a backup copy (.txt)</button>
+  <span class="saved-note" id="saved-note">Saved ✓</span>
+</div>
+
+<div class="modal-backdrop" id="paste-modal">
+  <div class="modal">
+    <h4>Heads up</h4>
+    <p>Looks like you pasted text into an answer box. That's fine if it's your own writing from elsewhere. But if this is an AI-generated answer, that defeats the point of answering these yourself. Paste activity is recorded in your backup file.</p>
+    <button onclick="closeModal()">Got it, continue</button>
+  </div>
+</div>
+
+
+<div id="rub-tip" role="tooltip"></div>
+<div class="modal-backdrop" id="rubric-modal">
+  <div class="modal rubric" role="dialog" aria-modal="true" aria-labelledby="rubric-title">
+    <h2 id="rubric-title">Project 1 Grading Rubric</h2>
+    <p class="helptext">Pricing a Subscription Using Behavioral Pricing Principles &middot; 60 points, plus up to 3 points of extra credit</p>
+
+    <h3>Summary of points</h3>
+    <table>
+      <tr><th>Component</th><th>Where it is in this webpage</th><th>Points</th></tr>
+      <tr><td>Behavioral pricing concepts</td><td>Step 1</td><td class="num">5</td></tr>
+      <tr><td>Ideas from lecture and from competitors</td><td>Step 1</td><td class="num">5</td></tr>
+      <tr><td>Positioning and page differences</td><td>Step 1</td><td class="num">5</td></tr>
+      <tr><td>Redesign planning: questions B1&ndash;B10</td><td>Step 2</td><td class="num">10</td></tr>
+      <tr><td>The webpages and redesign (before and after pages)</td><td>Step 3</td><td class="num">20</td></tr>
+      <tr><td>Two changes and why they matter</td><td>Step 4</td><td class="num">8</td></tr>
+      <tr><td>Academic article and interpretation</td><td>Step 4</td><td class="num">7</td></tr>
+      <tr class="total"><td colspan="2">Total</td><td class="num">60</td></tr>
+      <tr><td>Extra credit (optional)</td><td>Step 5</td><td class="num">up to 3</td></tr>
+    </table>
+
+    <h3 id="rub-concepts">1. Behavioral pricing concepts (5 points)</h3>
+    <p>Full credit requires that the response:</p>
+    <ul>
+      <li>identifies <strong>two</strong> of the five major, overarching behavioral pricing principles covered in class, named and described accurately; and</li>
+      <li>explains how at least one of them could be used to improve the chosen company&rsquo;s plan-selection page.</li>
+    </ul>
+    <p class="helptext">Note: AI tools do not know which five principles this course emphasizes, so this answer must come from your own recall of the course material.</p>
+
+    <h3 id="rub-ideas">2. Ideas from lecture and from competitors (5 points)</h3>
+    <p class="helptext">Several of your Step 1 answers together make up these 5 points; they are not scored separately.</p>
+    <ul>
+      <li>Discusses multiple ideas drawn from the class examples and from the competitor or &ldquo;ahead-of-the-curve&rdquo; company.</li>
+      <li>For <strong>each</strong> idea, explains whether it would make sense to apply in this company&rsquo;s context and <strong>why</strong> (for example, its customers, price level, or product).</li>
+    </ul>
+
+    <h3 id="rub-position">3. Positioning and page differences (5 points)</h3>
+    <ul>
+      <li>Describes the brand positioning of the chosen company and of the competitor.</li>
+      <li>Identifies at least <strong>two</strong> differences in their positioning and, for each, at least <strong>one</strong> way the difference is communicated to customers.</li>
+      <li>Cites specific details from the pricing pages that differ, such as the number of plans, the prices of the plans, and how features or prices are presented.</li>
+    </ul>
+
+    <h3 id="rub-plan">4. Redesign planning: questions B1&ndash;B10 (10 points)</h3>
+    <ul>
+      <li>Answers <strong>every part</strong> of each of the ten questions, including B10, the complete list of changes.</li>
+      <li>Explains not only <em>what</em> you would do but <em>why</em>, with reasoning that draws on relevant concepts or examples from class and on the specific company&rsquo;s context.</li>
+      <li>B10 lists at least <strong>three</strong> changes, at least <strong>two</strong> of which are pricing-related (they change prices or perceived price/value). The changes must be well reasoned and substantive, not three minimal tweaks.</li>
+      <li>B10 is written clearly enough that an AI tool could easily make the intended changes from your description alone, without guessing or asking follow-up questions.</li>
+    </ul>
+
+    <h3 id="rub-pages">5. The webpages and redesign (20 points)</h3>
+    <p>This category covers the live pages you build in Step 3. Full credit requires that:</p>
+    <ul>
+      <li><strong>before.html</strong> is a faithful, working replica of the company&rsquo;s current plan-selection page.</li>
+      <li><strong>after.html</strong> implements every change listed in B10 (at least three, including at least two pricing or perceived price/value changes), and the changes are visible and work in the published page.</li>
+      <li>The changes effectively apply relevant concepts from class, including at least <strong>two</strong> improvements related to behavioral pricing.</li>
+      <li>The layout and elements look professional and realistic, as if the page has been proofread and edited.</li>
+      <li>The text, elements, and changes are clear, well written, and well designed.</li>
+      <li>The changes would realistically improve outcomes for the firm and/or the experience of visitors.</li>
+      <li>Your review of the initial redesign, your discussion of the AI-suggested ideas (Step 3, parts C2&ndash;C3), and your shared Lovable chats show that you iterated and made considered decisions.</li>
+      <li>Both pages include the required class-project disclaimer, contain no real payment fields, and do not display real company logos or brand imagery.</li>
+    </ul>
+
+    <h3 id="rub-changes">6. Two changes and why they matter (8 points)</h3>
+    <ul>
+      <li>Presents <strong>two legitimate changes</strong> and, for each, connects the change to the concept from class most closely related to it, explaining how it would affect visitors&rsquo; perceptions and choices.</li>
+      <li>A change counts only if it is actually new. Points are lost if a listed &ldquo;change&rdquo; was already present on the original page (for example, claiming strikethrough pricing or $.99 endings as a change when the &ldquo;before&rdquo; page already used them).</li>
+    </ul>
+
+    <h3 id="rub-article">7. Academic article and interpretation (7 points)</h3>
+    <ul>
+      <li>The source is an <strong>academic journal article</strong>.</li>
+      <li>Explains what was done in the study, including its main conclusions <em>and</em> how the researchers reached them.</li>
+      <li>Connects the findings to your own redesign and argument.</li>
+      <li>Cites the article properly (in-text citation and full reference; APA is fine).</li>
+    </ul>
+
+    <h3>Required, but not scored separately</h3>
+    <ul>
+      <li>Your name, your chosen client company with a link to its plan-selection page, and your background summary of the client (Step 1).</li>
+      <li>The initial brainstorm of changes (Step 1).</li>
+      <li>The customer and ethical considerations questions (Step 4).</li>
+      <li>Shared Lovable chats for both projects (Step 3, part E), so the instructor can see your prompts and follow-ups. This evidence also supports the 20-point webpages category.</li>
+      <li><strong>Submitting your downloaded .txt file on Canvas</strong>, along with your live links. Your answers are not visible to the instructor until you submit the file.</li>
+    </ul>
+    <p class="helptext">Steps 1, 2, and 4 are to be completed without AI. Lovable is expected for Step 3 (and the optional Step 5 reveal page).</p>
+
+    <h3>Extra credit (optional, 3 points total)</h3>
+    <table>
+      <tr><th>Option</th><th>Points</th></tr>
+      <tr><td>GitHub repository with your .html files</td><td class="num">1</td></tr>
+      <tr><td>Before &rarr; after reveal page</td><td class="num">2</td></tr>
+    </table>
+    <p class="helptext">You can complete either option or both, for up to 3 points total.</p>
+
+    <button class="rubric-close" onclick="closeRubric()">Close rubric</button>
+  </div>
+</div>
+
+<footer>If you might switch devices or browsers before you're done, download a backup copy above. Nothing here is sent anywhere; everything stays in your own browser.</footer>
+
+<script>
+// =====================================================================
+// Tabs: 5 steps
+// =====================================================================
+const TABS = [
+  { id: "start",    label: "1. Getting Started" },
+  { id: "plan",     label: "2. Plan Your Redesign" },
+  { id: "make",     label: "3. Make Your Redesigned Pricing Page" },
+  { id: "why",      label: "4. Why These Changes Matter" },
+  { id: "showcase", label: "5. Showcase Your Redesign (Optional/EC)" },
+];
+
+const tabbarEl = document.getElementById("tabbar-inner");
+const panelsEl = document.getElementById("panels");
+
+TABS.forEach((t, i) => {
+  const btn = document.createElement("button");
+  btn.className = "tab-btn" + (i === 0 ? " active" : "");
+  btn.dataset.tab = t.id;
+  btn.innerHTML = `<span class="tab-index">${i + 1}</span>${t.label}`;
+  btn.addEventListener("click", () => showTab(t.id));
+  tabbarEl.appendChild(btn);
+});
+
+const rubricModal = document.getElementById("rubric-modal");
+function openRubric() { rubricModal.classList.add("show"); rubricModal.querySelector(".modal").scrollTop = 0; }
+function closeRubric() { rubricModal.classList.remove("show"); }
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-open-rubric]")) { openRubric(); return; }
+  if (e.target === rubricModal) closeRubric();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeRubric(); });
+
+const rubTip = document.getElementById("rub-tip");
+function showRubTip(el) {
+  const h = document.getElementById(el.dataset.rub);
+  if (!h) return;
+  let html = '<strong class="t">' + h.textContent.replace(/^\d+\.\s*/, "") + '</strong>';
+  let n = h.nextElementSibling;
+  while (n && n.tagName !== "H3") { html += n.outerHTML; n = n.nextElementSibling; }
+  html += '<p style="margin-top:6px;color:#bbb">Click &ldquo;Rubric &amp; Points&rdquo; for the full rubric.</p>';
+  rubTip.innerHTML = html;
+  rubTip.style.display = "block";
+  const r = el.getBoundingClientRect(), tw = rubTip.offsetWidth, th = rubTip.offsetHeight;
+  let left = Math.max(8, Math.min(r.left, window.innerWidth - tw - 8));
+  let top = r.bottom + 8;
+  if (top + th > window.innerHeight - 8) top = Math.max(8, r.top - th - 8);
+  rubTip.style.left = left + "px"; rubTip.style.top = top + "px";
+}
+function hideRubTip() { rubTip.style.display = "none"; }
+document.addEventListener("mouseover", (e) => { const p = e.target.closest && e.target.closest(".pts[data-rub]"); if (p) showRubTip(p); });
+document.addEventListener("mouseout", (e) => { if (e.target.closest && e.target.closest(".pts[data-rub]")) hideRubTip(); });
+document.addEventListener("focusin", (e) => { const p = e.target.closest && e.target.closest(".pts[data-rub]"); if (p) showRubTip(p); });
+document.addEventListener("focusout", hideRubTip);
+window.addEventListener("scroll", hideRubTip, true);
+
+const rubricTabBtn = document.createElement("button");
+rubricTabBtn.className = "tab-btn rubric-tab";
+rubricTabBtn.setAttribute("data-open-rubric", "");
+rubricTabBtn.textContent = "Rubric & Points";
+tabbarEl.appendChild(rubricTabBtn);
+
+function showTab(id) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.dataset.tab === id));
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.textContent;
+    btn.textContent = "Copied ✓";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1800);
+  }).catch(() => window.prompt("Copy this text manually (Ctrl/Cmd+C):", text));
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s == null ? "" : s;
+  return d.innerHTML;
+}
+
+// =====================================================================
+// STEP 1: Getting Started (company + competitors)
+// =====================================================================
+function buildStartTab() {
+  const panel = document.createElement("div");
+  panel.className = "tab-panel active";
+  panel.dataset.tab = "start";
+  panel.innerHTML = `
+    <div class="rubric-note">Point values appear next to each part of this project (the project is worth 60 points). <button class="linklike" data-open-rubric>Open the full grading rubric</button> to see exactly what earns full credit.</div>
+
+    <div class="callout" style="background:#e5efe9;border-color:#b7d3c6">
+      <strong>Your role:</strong> Imagine you are a marketing consultant working with a client: the subscription company whose plan-selection page you choose below. Your job is to understand the client's business and brand, recommend changes that would improve its pricing page (for the company and for its customers), and show the client what the redesign would look like. Throughout this project, "the client" means that company.
+    </div>
+
+    <div class="callout">It is strongly recommended that you start this and make your redesigned pricing page (Step 3) at least 1.5 days before the deadline. And be sure to follow the instructions throughout the project. You will use an AI tool called Lovable for Step 3, which might run into message limits that take hours or 1 day to reset, which is one main reason why it's important to start early and follow the instructions carefully.</div>
+
+    <div class="card">
+      <h2>Your Name <span class="pts req">Required</span></h2>
+      <p class="helptext">This gets included in your downloaded answers file so your submission is identifiable.</p>
+      <label class="field-label" for="student-name">Your full name</label>
+      <input type="text" id="student-name" placeholder="First Last">
+    </div>
+
+    <div class="card">
+      <h2>Choose Your Company <span class="pts req">Required</span></h2>
+      <p class="helptext">Pick any online subscription company with a plan-selection page that lists prices. Small to mid-sized subscription companies (e.g., Yippee, Nebula, etc) are often a bit easier than the most popular companies (e.g., Netflix) because they often have more room for improvement and don't already use the behavioral pricing principles. But you are welcome to choose any subscription company as long as you can come up with a few ways to improve the page and as long as it hasn't already been taken by another student.</p>
+      <label class="field-label" for="company-name">Which subscription company did you choose as your client?</label>
+      <input type="text" id="company-name">
+      <label class="field-label" for="company-url">Link to that company's plan selection page</label>
+      <input type="url" id="company-url" placeholder="https://...">
+      <label class="field-label" for="client-background"><span class="pts req">Required</span> Before advising a client, a consultant needs to understand their business. Give a bit of background on your client: Who are they? How many years have they existed? Do they offer only subscriptions, or other products or services as well? What is their overall brand positioning? Do they communicate that positioning well on their pricing page?</label>
+      <textarea id="client-background" style="min-height:140px" placeholder="Your answer..."></textarea>
+    </div>
+
+    <div class="card">
+      <span class="badge no-ai">No AI</span>
+      <h2>Brainstorm &amp; Recall Behavioral Pricing Concepts</h2>
+      <p class="helptext">Before looking at competitors, start with your own ideas and what you remember from class.</p>
+
+      <label class="field-label" for="brainstorm-changes"><span class="pts req">Required</span> At first glance, what are some changes you could make to improve your company's plan-selection page? Brainstorm at least a handful of changes you would consider making that might help your company (and/or benefit your customers).</label>
+      <textarea id="brainstorm-changes" style="min-height:130px" placeholder="Your answer..."></textarea>
+
+      <label class="field-label" for="principles-recall"><span class="pts" data-rub="rub-concepts" tabindex="0">Behavioral pricing concepts: 5 pts</span> Think back to the behavioral pricing lecture and the content we covered in class. What were 2 of the 5 "big behavioral pricing principles" that we covered? Briefly discuss how you could use one of these principles to improve your company's plan-selection page.</label>
+      <textarea id="principles-recall" style="min-height:130px" placeholder="Your answer..."></textarea>
+
+      <label class="field-label" for="examples-ideas"><span class="pts part" data-rub="rub-ideas" tabindex="0">Part of the 5 pts: ideas from lecture &amp; competitors</span> Do any of the following examples give you additional ideas of what you could do to improve pricing on your company's plan-selection page?</label>
+      <ul class="examples-list">
+        <li>Example of making an annual plan more popular by presenting it as "$5/mo billed annually" rather than "$60/yr"</li>
+        <li>Strikethrough pricing example</li>
+        <li>Adding unit prices</li>
+        <li>The bread maker that wasn't being sold, and what happened when they added a more expensive bread maker next to it</li>
+        <li>Netflix using a comparison table</li>
+        <li>The Lyft example (left-digit bias)</li>
+        <li>Changes that Dropbox made (discussion post)</li>
+        <li>What happened when a 6-month subscription was removed, leaving only an annual and monthly subscription (example from Stanley's Teams call)</li>
+        <li>What did JC Penney do that backfired for them?</li>
+        <li>Other changes you made in the group activity (Yippee or Cravory Cookies)</li>
+        <li>What did Hulu and Amazon Prime do to cater to young adults and college students? How might a subscription company reach new customers and cater to several different segments? (Segmentation & Positioning lecture)</li>
+      </ul>
+      <textarea id="examples-ideas" style="min-height:130px" placeholder="Your answer..."></textarea>
+    </div>
+
+    <div class="card">
+      <span class="badge no-ai">No AI</span>
+      <h2>Competitor Comparison</h2>
+      <p class="helptext">Now look outward (the idea you give below also counts toward &ldquo;Ideas from lecture &amp; competitors,&rdquo; 5 pts, together with your answer above): one direct competitor, and one subscription company (in this industry or any other) that's ahead of the curve in pricing or marketing, such as Netflix or Spotify.</p>
+      <label class="field-label" for="competitors"><span class="pts part" data-rub="rub-ideas" tabindex="0">Part of the 5 pts: ideas from lecture &amp; competitors</span> Name and link to a competitor's pricing page, and to the ahead-of-the-curve company's pricing page. What is 1 idea either of them gives you for improving your company's plan-selection page?</label>
+      <textarea id="competitors" style="min-height:130px" placeholder="Competitor: name, url&#10;Ahead-of-the-curve company: name, url&#10;Idea: ..."></textarea>
+      <label class="field-label" for="positioning-diff"><span class="pts" data-rub="rub-position" tabindex="0">Positioning/page differences: 5 pts</span> How does your company's brand positioning differ from the competitor's? How does its pricing page differ from theirs?</label>
+      <textarea id="positioning-diff" style="min-height:130px" placeholder="Your answer..."></textarea>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+}
+
+// =====================================================================
+// STEP 2: Plan Your Redesign (Section B, one question at a time)
+// =====================================================================
+const QUESTIONS = [
+  "Would you keep the current number of subscriptions or would you add or remove option(s)? Explain what changes if any you would make to the # of options and why.",
+  "Would you use prices ending in $.99, $.00, or neither? Why? Prices ending in $.99 instead of $.00 is a classic example of which concept?",
+  "Which price frame would you use? (price per month, per year, etc) Why?",
+  "Would you include a higher list price that is crossed out? Why?",
+  "Would you offer a free trial or not? If so, would it automatically renew at the end of the trial?",
+  "Would you pre-select one of the subscription options? (i.e. use a “default”). Why/why not?",
+  "Would you make any of the options more salient, vivid, or prominent (e.g., use visual hierarchy)? Would you make any less prominent or harder to find? How?",
+  "What are the prices of 2 of the most well-known competitors? And what are the current prices of your company's options? How would your chosen prices compare to each? Would you change your company's subscription prices based on this knowledge or in order to be priced below other reference points?",
+  "What else would you change or add on this subscription pricing page?",
+  "\"Your answer\" below is the prompt that AI will use to build your redesign: list all of the changes you will make to the subscription pricing page, and describe each one in a way that's clear and specific enough that AI could make the change correctly without needing to ask you follow-up questions. Make sure there are at least 3 total changes, and that at least 2 of the changes are changes to pricing or perceived price/value. Anything you mentioned that you'd change in B1-B9 should also be included in your list."
+];
+
+const QUESTION_NOTES = {
+  10: "This started pre-filled with what you wrote in B1 through B9. Edit it down into a clean, specific list: for each change, say exactly which price, button, color, or element you're changing and what the new value should be."
+};
+
+const MC_CHECKS = {
+  3: {
+    multi: false,
+    prompt: "A company can advertise the same annual plan as either “$10/month” or “$120/year.” Which framing tends to make the price feel smaller and increase purchase likelihood?",
+    options: [
+      { id: "a", correct: true,  text: "$10/month: smaller, more frequent numbers feel less costly than one large lump sum." },
+      { id: "b", correct: false, text: "$120/year: showing the full commitment upfront builds more trust." },
+      { id: "c", correct: false, text: "Neither: shoppers mentally convert to the same total either way." },
+      { id: "d", correct: false, text: "$120/year: bigger numbers signal a more premium product." },
+    ],
+    explanation: "This is price framing (temporal reframing): breaking a cost into smaller periodic chunks makes it feel cheaper, even though $10/month and $120/year are the same total."
+  },
+  4: {
+    multi: true,
+    prompt: "A pricing page shows “$25 (crossed out) $15/mo.” Which of the following does this illustrate? (Select all that apply)",
+    options: [
+      { id: "a", correct: true,  text: "Strikethrough pricing: the crossed-out price sets a reference point that makes $15 look like a deal." },
+      { id: "b", correct: true,  text: "Transaction utility: the perceived $10 “savings” creates its own pleasure, separate from how much the subscriber will actually use the product." },
+      { id: "c", correct: false, text: "Default effect: one option is pre-selected so it's chosen without extra effort." },
+      { id: "d", correct: false, text: "Salience: the option is made more visually prominent through size or color." },
+    ],
+    explanation: "Both are at play. The crossed-out price sets a reference point, making $15 look discounted, and the visible “savings” itself creates transaction utility: satisfaction from getting a good deal, independent of the product's use value."
+  },
+};
+
+let sbIndex = 0;
+let sbReview = false;
+let sbEditingFromReview = false;
+let sbAnswers = new Array(QUESTIONS.length).fill("");
+let sbMC = {};
+Object.keys(MC_CHECKS).forEach(k => { sbMC[k] = { sel: [], checked: false }; });
+
+let pasteCount = 0;
+let copyCount = 0;
+let modalShown = false;
+let autoDownloadTriggered = false;
+const modal = document.getElementById("paste-modal");
+
+function getAnswer(n) { return (sbAnswers[n - 1] || "").trim(); }
+
+function buildPlanTab() {
+  const panel = document.createElement("div");
+  panel.className = "tab-panel";
+  panel.dataset.tab = "plan";
+  panel.innerHTML = `
+    <div class="card">
+      <span class="badge no-ai">No AI</span>
+      <h2>Plan Your Redesign <span class="pts" data-rub="rub-plan" tabindex="0">B1&ndash;B10 together: 10 pts</span></h2>
+      <p class="helptext">Answer these directly, in your own words (1-3 sentences each). No AI. Questions appear one at a time so you're working through them yourself. A few include a quick multiple-choice concept check. You can go back and edit any answer, and you'll get a full review screen before moving on. You must make at least 3 changes total to the current design (see Q10). Q10 will also auto-fill your redesign prompt in Step 3.</p>
+      <div id="sb-container"></div>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+}
+
+let b10Prefilled = false;
+
+function buildB10Prefill() {
+  const lines = [];
+  QUESTIONS.slice(0, 9).forEach((q, i) => {
+    const ans = (sbAnswers[i] || "").trim();
+    if (ans) lines.push(`From B${i + 1}: ${ans}`);
+  });
+  return lines.join("\n");
+}
+
+function renderSectionB() {
+  const c = document.getElementById("sb-container");
+  if (!c) return;
+  if (sbReview) { c.innerHTML = buildReviewHTML(); wireReviewButtons(); updatePlanContinueNav(); return; }
+  const n = sbIndex + 1;
+  if (n === 10 && !b10Prefilled) {
+    sbAnswers[9] = buildB10Prefill();
+    b10Prefilled = true;
+    scheduleSave();
+  }
+  c.innerHTML = buildQuestionHTML(n);
+  wireQuestionHandlers(n);
+  updatePlanContinueNav();
+}
+
+function planSectionComplete() {
+  return sbAnswers.length === QUESTIONS.length && sbAnswers.every(a => (a || "").trim().length > 0);
+}
+
+function updatePlanContinueNav() {
+  const btn = document.getElementById("continue-plan");
+  const note = document.getElementById("plan-gate-note");
+  if (!btn) return;
+  const complete = planSectionComplete();
+  btn.disabled = !complete;
+  btn.title = complete ? "" : "Answer all 10 questions in Plan Your Redesign before continuing.";
+  if (note) note.style.display = complete ? "none" : "";
+}
+
+function escAttr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+
+function buildB9Placeholder() {
+  const parts = [];
+  const brainstorm = (getVal("brainstorm-changes") || "").trim();
+  const examples = (getVal("examples-ideas") || "").trim();
+  if (brainstorm) parts.push(`From your brainstorm: ${brainstorm}`);
+  if (examples) parts.push(`From the lecture examples: ${examples}`);
+  return parts.length ? parts.join("  |  ") : "Your answer...";
+}
+
+function buildQuestionHTML(n) {
+  const dots = Array.from({ length: QUESTIONS.length }).map((_, i) => {
+    const cls = ["dot"];
+    if (sbAnswers[i]) cls.push("done");
+    if (i === sbIndex) cls.push("current");
+    return `<span class="${cls.join(" ")}"></span>`;
+  }).join("");
+
+  const mc = MC_CHECKS[n];
+  const mcHtml = mc ? buildMCHtml(n, mc) : "";
+  const placeholder = n === 9 ? buildB9Placeholder() : "Your answer...";
+
+  return `
+    <div class="sb-progress">${dots}</div>
+    <div class="sb-qcard">
+      <div class="q-num">Question B${n} of ${QUESTIONS.length} <span class="pts part" data-rub="rub-plan" tabindex="0">Part of B1&ndash;B10: 10 pts</span></div>
+      <h3>${esc(QUESTIONS[n - 1])}</h3>
+      ${QUESTION_NOTES[n] ? `<div class="callout">${esc(QUESTION_NOTES[n])}</div>` : ""}
+      <label class="field-label primary" for="answer-current">Your answer</label>
+      <textarea id="answer-current" placeholder="${escAttr(placeholder)}" style="min-height:110px"></textarea>
+      ${mcHtml}
+      <div class="sb-nav">
+        <button class="nav-btn back" id="sb-back" ${sbIndex === 0 ? "disabled" : ""}>Back</button>
+        <span class="status-msg" id="sb-status"></span>
+        <button class="nav-btn" id="sb-continue">${sbEditingFromReview ? "Save & Return to Review" : (n === QUESTIONS.length ? "Review My Answers" : "Continue")}</button>
+      </div>
+    </div>
+  `;
+}
+
+function buildMCHtml(n, mc) {
+  const inputType = mc.multi ? "checkbox" : "radio";
+  const optionsHtml = mc.options.map(opt => `
+    <label class="mc-option">
+      <input type="${inputType}" name="mc-${n}" value="${opt.id}" data-n="${n}">
+      <span>${esc(opt.text)}</span>
+    </label>
+  `).join("");
+  const checkBtn = mc.multi ? `<button class="check-btn" id="mc-check-${n}">Check Answer</button>` : "";
+  return `
+    <div class="mc-widget">
+      <div class="mc-label">Quick concept check</div>
+      <p class="mc-prompt">${esc(mc.prompt)}</p>
+      ${optionsHtml}
+      ${checkBtn}
+      <div class="mc-feedback" id="mc-feedback-${n}"></div>
+    </div>
+  `;
+}
+
+function evaluateMC(n) {
+  const mc = MC_CHECKS[n];
+  const correctIds = mc.options.filter(o => o.correct).map(o => o.id).sort();
+  const selIds = [...sbMC[n].sel].sort();
+  const isCorrect = correctIds.length === selIds.length && correctIds.every((v, i) => v === selIds[i]);
+  sbMC[n].checked = true;
+  const fb = document.getElementById(`mc-feedback-${n}`);
+  fb.classList.add("show");
+  fb.classList.toggle("correct", isCorrect);
+  fb.classList.toggle("incorrect", !isCorrect);
+  fb.textContent = (isCorrect ? "Correct. " : "Not quite. ") + mc.explanation;
+  updateContinueState(n);
+  scheduleSave();
+}
+
+function updateContinueState(n) {
+  const statusEl = document.getElementById("sb-status");
+  if (!statusEl) return;
+  const mc = MC_CHECKS[n];
+  statusEl.textContent = (mc && !sbMC[n].checked) ? "Answer the quick concept check above first." : "";
+}
+
+function wireQuestionHandlers(n) {
+  const ta = document.getElementById("answer-current");
+  ta.value = sbAnswers[sbIndex];
+  ta.addEventListener("input", (e) => { sbAnswers[sbIndex] = e.target.value; scheduleSave(); });
+  ta.addEventListener("paste", () => {
+    pasteCount++;
+    if (!modalShown) { modal.classList.add("show"); modalShown = true; }
+    scheduleSave();
+  });
+  ta.addEventListener("copy", () => { copyCount++; scheduleSave(); });
+
+  const mc = MC_CHECKS[n];
+  if (mc) {
+    document.querySelectorAll(`input[name="mc-${n}"]`).forEach(input => {
+      if (sbMC[n].sel.includes(input.value)) input.checked = true;
+      input.addEventListener("change", () => {
+        if (mc.multi) {
+          const checked = Array.from(document.querySelectorAll(`input[name="mc-${n}"]:checked`)).map(i => i.value);
+          sbMC[n].sel = checked;
+        } else {
+          sbMC[n].sel = [input.value];
+          evaluateMC(n);
+        }
+        scheduleSave();
+      });
+    });
+    if (mc.multi) {
+      document.getElementById(`mc-check-${n}`).addEventListener("click", () => evaluateMC(n));
+    }
+    if (sbMC[n].checked) evaluateMC(n);
+  }
+
+  updateContinueState(n);
+
+  document.getElementById("sb-back").addEventListener("click", () => {
+    sbAnswers[sbIndex] = document.getElementById("answer-current").value;
+    if (sbIndex > 0) sbIndex--;
+    scheduleSave();
+    renderSectionB();
+  });
+
+  document.getElementById("sb-continue").addEventListener("click", () => {
+    const val = document.getElementById("answer-current").value.trim();
+    const statusEl = document.getElementById("sb-status");
+    if (!val) { statusEl.textContent = "Please enter an answer before continuing."; return; }
+    if (mc && !sbMC[n].checked) { statusEl.textContent = "Answer the quick concept check above first."; return; }
+    sbAnswers[sbIndex] = val;
+    if (sbEditingFromReview) {
+      sbEditingFromReview = false;
+      sbReview = true;
+    } else if (sbIndex < QUESTIONS.length - 1) {
+      sbIndex++;
+    } else {
+      sbReview = true;
+    }
+    scheduleSave();
+    renderSectionB();
+  });
+}
+
+function buildReviewHTML() {
+  const items = QUESTIONS.map((q, i) => {
+    const n = i + 1;
+    const answer = sbAnswers[i] || "(not answered)";
+    return `
+      <div class="review-item">
+        <div class="review-head">
+          <h4>B${n}. ${esc(q.length > 90 ? q.slice(0, 90) + "…" : q)}</h4>
+          <button class="edit-link" data-n="${n}">Edit</button>
+        </div>
+        <div class="review-answer">${esc(answer)}</div>
+      </div>
+    `;
+  }).join("");
+  return `
+    <p class="helptext">Review your answers below before moving on. Click "Edit" on any question to revise it.</p>
+    ${items}
+    <div class="callout">Once everything looks right, move on to Step 3 using the tab bar above.</div>
+  `;
+}
+
+function wireReviewButtons() {
+  document.querySelectorAll(".edit-link").forEach(btn => {
+    btn.addEventListener("click", () => {
+      sbIndex = parseInt(btn.dataset.n, 10) - 1;
+      sbEditingFromReview = true;
+      sbReview = false;
+      renderSectionB();
+    });
+  });
+}
+
+function closeModal() { modal.classList.remove("show"); }
+
+// =====================================================================
+// STEP 3: Make Your Redesigned Pricing Page (Lovable)
+// =====================================================================
+const CLONE_PROMPT =
+`Before sending this message, attach your cleaned screenshot to it. Use the + button near the chat box, drag the image directly into the chat box, or paste it in with Ctrl/Cmd+V. This prompt will not work without an attached image.
+
+Please clone this attached screenshot and make a fully functional standalone .html webpage that looks and functions exactly like the page in the screenshot.
+
+Exact replica: Make this an exact replica. Match layout, spacing, typography, colors, structure, and functionality as closely as possible to the screenshot (except logos/copyright content).
+
+Make the plan-selection buttons functional: when someone clicks a plan's "Choose"/"Select"/"Subscribe" button, store which plan they picked (e.g. in a variable like planChoice) and add it to the URL as a query parameter (e.g. ?plan=<planChoice>). Then take them to a second screen in this same project that keeps the exact same look, theme, fonts, and colors as the plan-selection page. That second screen should: show which plan they picked, include a "Pay with Apple Pay" button styled like a real Apple Pay button (it does not need to actually process anything — clicking it can just show a simple confirmation message like "This is a class project, no real payment was made"), and include a "Back" button that returns to the plan-selection page. Do not add a field for entering a credit card number or any other real payment information anywhere on this page.
+
+Required disclaimers (on every screen, including the plan-selection page and the Apple Pay screen):
+
+1. A banner at the very top of the page, above everything else, full width, that stays visible even when scrolling (fixed/sticky) and cannot be dismissed. Use clearly readable text and a high-contrast background (not small, faint, or tucked away), reading exactly: "This is a redesign for a class project. It is not associated with any subscription company, and no payments are processed or collected."
+
+2. A footer at the bottom of the page, in readable text, reading exactly: "Student class project for educational purposes only. This page is a mock-up and is not associated with, affiliated with, or endorsed by any company, brand, or organization it may resemble. Any names, prices, plans, features, logos, or trademarks shown belong to their respective owners and may not reflect real offerings. No payments are processed, no accounts or subscriptions are created, and no personal or payment information should be entered."
+
+Do not use any real company logo, wordmark, brand mark, trademarked image, or product photo anywhere. If the screenshot shows one, or one is left in by mistake, replace it with a plain placeholder such as a simple text label ("Logo") or a generic icon. Any button or link that would normally go to the real company's own site (log in, sign up, account, help, social media) should not go anywhere; make it do nothing or show a brief message saying this is a class project.`;
+
+function buildRedesignPrompt() {
+  const changes = getAnswer(10) || "[go back to Step 2 and finish Question B10. Your list of 3+ changes will appear here automatically.]";
+  return `Please make the following changes to this page. Apply them directly to what's already built here, rather than rebuilding it from scratch:
+
+${changes}
+
+Do not make any other changes beyond what's listed above. Make all of these changes in this one response rather than asking me clarifying or follow-up questions first; if anything above is ambiguous, make your best reasonable interpretation and continue.
+
+Keep the existing "Pay with Apple Pay" confirmation screen and its Back button exactly as they already work. Also keep the required class-project disclaimer banner at the top of every screen and the disclaimer footer, with their exact wording, always visible and easy to read, and do not add any real company logo or brand image. You may adjust their colors or styling only so they still match your redesign, while keeping them clearly readable.`;
+}
+
+const IDEAS_PROMPT =
+`Without making any changes yet, review this page and suggest a few ideas for how it could be improved further. Include ideas about look/design, functionality, and making it feel more realistic as a real subscription page, plus ideas grounded in concepts like segmentation, positioning, behavioral pricing, attention, or memory. Just list and briefly explain your ideas for now; don't change anything yet.`;
+
+function buildChecklistHtml(prefix, items) {
+  return `
+    <div class="checklist">
+      <div class="checklist-label">Before you move on, check off:</div>
+      ${items.map((text, i) => `
+        <label class="checklist-item">
+          <input type="checkbox" id="chk-${prefix}-${i}">
+          <span>${esc(text)}</span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+}
+
+function buildPartMake() {
+  const panel = document.createElement("div");
+  panel.className = "tab-panel";
+  panel.dataset.tab = "make";
+  panel.innerHTML = `
+    <div class="card">
+      <span class="badge ai-ok">AI required (Lovable)</span>
+      <h2>Make Your Redesigned Pricing Page <span class="pts" data-rub="rub-pages" tabindex="0">Webpages/redesign: 20 pts</span></h2>
+      <p class="helptext">You'll build two Lovable projects: a "before" clone of the original plan selection/pricing page, and an "after" (your redesign) that starts from that same clone and applies your redesign. Each project publishes to its own live web address directly from Lovable.</p>
+
+      <div class="callout">Most people will need a few follow-up messages to get the redesign right; bundle every change you want into a single message when possible. If you need more after that, you'll likely have enough credits for another follow-up, and more once your quota resets after some hours.</div>
+
+      <div class="step-block">
+        <h3>Step A: Screenshot the original, remove logos/images</h3>
+        <p class="helptext">Take a full-page screenshot of your company's current pricing page. If it includes any logos or product images, which may be copyrighted, either avoid including them in your screenshot in the first place, or try to remove them before using it with Lovable or any AI tool. (The Clone Prompt below also tells Lovable to replace any logo or brand image that slips through with a plain placeholder, but don't rely on that alone.)</p>
+        <details class="tip">
+          <summary>Easiest way to remove a logo/image</summary>
+          <div class="tip-body">Paste your screenshot into Google Slides or PowerPoint → draw a rectangle over the logo/image → set the rectangle's fill color to match the background right next to it (use the eyedropper/color-picker tool) → remove the rectangle's outline → then screenshot that slide as your cleaned image.</div>
+        </details>
+      </div>
+
+      <div class="step-block">
+        <h3>Step B: Set up Lovable and build "before.html" <span class="pts part" data-rub="rub-pages" tabindex="0">Part of the 20 pts</span></h3>
+        <p class="helptext">Go to <a href="https://lovable.dev" target="_blank" rel="noopener">lovable.dev</a> and sign up free (no credit card needed). This automatically starts a new project.</p>
+        <ol class="steps">
+          <li>Attach your cleaned screenshot to the chat: click the "+" button near the chat box and choose "Attach files," or drag the image directly into the chat box, or paste it in with Ctrl/Cmd+V.</li>
+          <li><strong>In that same message, also paste the Clone Prompt below, then send it.</strong> The screenshot and the Clone Prompt both need to go out together as one message.</li>
+          <li>Compare the result to your screenshot. If anything's off, you can send one follow-up message, but list everything you want fixed in that single message (e.g., "fix the header color, move the price down, and fix the button spacing") rather than sending several separate messages, to avoid using up your daily message credits.</li>
+          <li>Click a plan's "Choose"/"Subscribe" button and confirm it takes you to the mock "Pay with Apple Pay" confirmation screen (same look as the rest of the page, no real card fields) with a working Back button, and that the class-project disclaimer banner shows at the very top (staying visible as you scroll) and the disclaimer footer shows at the bottom, and that no real company logo or brand image appears anywhere.</li>
+          <li>Once it looks right, click Publish (usually top right) to get your live "before" address. Copy that link and paste it into the Live URL field below. Don't make further changes to this project after this; you want this version to stay as your fixed "before."</li>
+        </ol>
+        <div class="copy-row"><button class="copy-btn" id="copy-clone-prompt">Copy Clone Prompt</button></div>
+        ${buildChecklistHtml("before", [
+          "I attached my cleaned screenshot and sent the Clone Prompt in the same message (my first Lovable message).",
+          "Choosing a plan takes me to a themed “Pay with Apple Pay” confirmation screen (no real card fields) with a working Back button.",
+          "The class-project disclaimer banner is at the very top of every screen (and stays visible as I scroll), the disclaimer footer is at the bottom, and no real company logo or brand image appears anywhere.",
+          "I clicked Publish and copied the live URL.",
+        ])}
+        <label class="field-label" for="make-before-url">Live URL: before.html</label>
+        <input type="url" id="make-before-url" placeholder="https://....lovable.app">
+      </div>
+
+      <div class="step-block">
+        <h3>Step C: Build "after.html" by remixing "before.html" <span class="pts part" data-rub="rub-pages" tabindex="0">Part of the 20 pts</span></h3>
+        <p class="helptext">Don't start a new project from your screenshot again. Instead, use Lovable's Remix feature to fork your finished before.html project: its code carries over, so your redesign builds on the clone you already got working. You'll build an initial version, then go through one round of your own review and one round of AI-suggested ideas before locking it in.</p>
+
+        <h4 style="margin:16px 0 4px;font-size:0.95rem">C1. Build your initial redesign</h4>
+        <ol class="steps">
+          <li>Open your before.html project in Lovable. Find the "..." menu (in the project sidebar, or under Project actions) and choose Remix.</li>
+          <li>Name the copy something like "pricing-after" so you don't mix it up with "before," and confirm.</li>
+          <li>In this new, remixed project, paste the Redesign Prompt below as your message (it auto-fills with your Q10 list of changes from Step 2), then send it. You don't need to attach the screenshot again; the code is already there.</li>
+          <li>Click Publish to get a live "after" address, and paste that link into the Live URL field below.</li>
+        </ol>
+        <div class="copy-row"><button class="copy-btn" id="copy-redesign-prompt">Copy Redesign Prompt</button></div>
+        <label class="field-label" for="make-after-url">Live URL: after.html</label>
+        <input type="url" id="make-after-url" placeholder="https://....lovable.app">
+
+        <h4 style="margin:20px 0 4px;font-size:0.95rem">C2. Proofread it yourself <span class="pts part" data-rub="rub-pages" tabindex="0">Part of the 20 pts</span></h4>
+        <p class="helptext">Open your live after.html link above in a browser (not just the Lovable preview pane) and look it over like a visitor would: layout, wording, whether the plan buttons and checkout screen work, anything that looks off.</p>
+        <label class="field-label" for="self-review-notes">List a few things you noticed that could be improved further, whether that's look, functionality, or something else.</label>
+        <textarea id="self-review-notes" style="min-height:100px" placeholder="Your answer..."></textarea>
+
+        <h4 style="margin:20px 0 4px;font-size:0.95rem">C3. Ask Lovable's AI for its own ideas <span class="pts part" data-rub="rub-pages" tabindex="0">Part of the 20 pts</span></h4>
+        <p class="helptext">In the same after.html project, paste the Ideas Prompt below as a message. It's written to only list ideas, not make changes yet.</p>
+        <div class="copy-row"><button class="copy-btn" id="copy-ideas-prompt">Copy Ideas Prompt</button></div>
+        <label class="field-label" for="ai-ideas-discuss">Pick at least 2 of the ideas the AI mentioned. Briefly list them and discuss whether you think you should make either of those changes, and why or why not.</label>
+        <textarea id="ai-ideas-discuss" style="min-height:120px" placeholder="Your answer..."></textarea>
+
+        <h4 style="margin:20px 0 4px;font-size:0.95rem">C4. Make any further changes, then finalize</h4>
+        <ol class="steps">
+          <li>Based on your own review and/or the AI's ideas, send one more message with everything you want changed bundled together (you don't have to use every idea; it's your call). You'll likely have enough credits for another follow-up, and more once your quota resets.</li>
+          <li>Click Publish again so your live link reflects the latest version. The address itself doesn't change, so the Live URL field above should still be correct; double check it anyway.</li>
+          <li>Double-check the "Pay with Apple Pay" confirmation screen, Back button, and the top disclaimer banner and footer disclaimer still work, are still clearly readable, and still match your redesign's final look. Make sure you did not add a logo or brand image while redesigning.</li>
+        </ol>
+        ${buildChecklistHtml("after", [
+          "I used Remix on my before.html project, instead of starting over from the screenshot.",
+          "I renamed the remixed copy so I can tell it apart from before.html.",
+          "I pasted the Redesign Prompt (not the Clone Prompt) as my message in the new project.",
+          "I opened my live after.html link in a browser and noted a few things I could still improve.",
+          "I asked Lovable's AI for ideas and discussed at least 2 of them above.",
+          "The Apple Pay confirmation screen, Back button, and both disclaimers (top banner and footer) still work, are readable, and match my final redesign.",
+          "I clicked Publish and copied the live URL.",
+        ])}
+      </div>
+
+      <div class="step-block">
+        <h3>Step D: Keep an eye on your daily messages</h3>
+        <div class="callout">Lovable's free plan gives you a limited number of messages per day total, across all your projects, with no credit card required. Between getting before.html accurate and iterating on after.html, you'll likely use a good chunk of that budget; it doesn't need to be pixel-perfect. Showing that you iterated and improved it matters more than a flawless result. If a follow-up is needed, be specific and combine everything you want changed into one message rather than sending several. After any follow-up change, click Publish again so your live link reflects the latest version; the URL itself doesn't change. If you run out for the day, your quota resets after some hours.</div>
+      </div>
+
+      <div class="step-block">
+        <h3>Step E: Share your Lovable chats <span class="pts part" data-rub="rub-pages" tabindex="0">Part of the 20 pts</span></h3>
+        <p class="helptext">Your instructor needs to see your actual Lovable conversations (the prompts you sent, Lovable's replies, and any follow-ups) to confirm what your prompts looked like, whether they were clear, and how much you iterated. Do this after you have finished and published both projects, and <strong>please do not delete any messages</strong>.</p>
+        <ol class="steps">
+          <li>In Lovable, open the project and look for a <strong>Share</strong> option (usually near the top right or in the project menu) that gives you a link to the chat or project. Use whichever option your account shows, and make sure the link can be opened by someone who is not you.</li>
+          <li>If Lovable does not give you a shareable chat link, copy and paste the <strong>entire</strong> conversation (all of your messages and Lovable's replies, in order) into the box instead, or paste a link to a Google Doc containing it.</li>
+          <li>Remixing may start the new project with a fresh or shortened chat, so share <strong>both</strong> projects: the before.html chat (your Clone Prompt) and the after.html chat (your Redesign Prompt, the Ideas Prompt, and every follow-up). If the after project's chat also shows the earlier history, just say so.</li>
+        </ol>
+        <label class="field-label" for="chat-before">Lovable chat for before.html (link, or paste the full conversation)</label>
+        <textarea id="chat-before" style="min-height:80px" placeholder="https://... or pasted conversation"></textarea>
+        <label class="field-label" for="chat-after">Lovable chat for after.html (link, or paste the full conversation)</label>
+        <textarea id="chat-after" style="min-height:80px" placeholder="https://... or pasted conversation"></textarea>
+        ${buildChecklistHtml("chats", [
+          "I shared (or pasted) the full chat for before.html.",
+          "I shared (or pasted) the full chat for after.html, including my follow-up messages.",
+          "I have not deleted any messages from either project.",
+        ])}
+      </div>
+
+      <p class="helptext">Once both projects are published, checked off, their live URLs entered above, and both chats shared, you're done with this step.</p>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+  document.getElementById("copy-clone-prompt").addEventListener("click", (e) => copyText(e.target, CLONE_PROMPT));
+  document.getElementById("copy-redesign-prompt").addEventListener("click", (e) => copyText(e.target, buildRedesignPrompt()));
+  document.getElementById("copy-ideas-prompt").addEventListener("click", (e) => copyText(e.target, IDEAS_PROMPT));
+}
+
+// =====================================================================
+// STEP 4: Why These Changes Matter (combined D + E, brief)
+// =====================================================================
+function buildWhyTab() {
+  const panel = document.createElement("div");
+  panel.className = "tab-panel";
+  panel.dataset.tab = "why";
+  panel.innerHTML = `
+    <div class="card">
+      <span class="badge no-ai">No AI</span>
+      <h2>Why These Changes Matter</h2>
+      <p class="helptext">Pick 2 of your changes and, for each, briefly explain why you made it and how it would affect consumer perceptions or behavior. Would it increase average order value (AOV)? Conversion rate? One paragraph each.</p>
+      <h3 class="subhead">Change 1 <span class="pts" data-rub="rub-changes" tabindex="0">Two changes &amp; why: 8 pts total</span></h3>
+      <label class="field-label" for="d1-concept">Which behavioral pricing concept does this connect to?</label>
+      <input type="text" id="d1-concept" placeholder="">
+      <label class="field-label" for="d1-explain">Explanation of how it would impact visitors to this subscription page & why (impact on perceptions, behavior, % who choose a particular plan, AOV, etc)</label>
+      <textarea id="d1-explain" style="min-height:120px" placeholder="One paragraph..."></textarea>
+      <h3 class="subhead">Change 2 <span class="pts part" data-rub="rub-changes" tabindex="0">Part of the 8 pts</span></h3>
+      <label class="field-label" for="d2-concept">Which behavioral pricing concept does this connect to?</label>
+      <input type="text" id="d2-concept" placeholder="e.g. strikethrough pricing">
+      <label class="field-label" for="d2-explain">Explanation of how it would impact visitors to this subscription page & why (impact on perceptions, behavior, % who choose a particular plan, AOV, etc)</label>
+      <textarea id="d2-explain" style="min-height:120px" placeholder=""></textarea>
+
+      <h3 class="subhead">Academic Evidence <span class="pts" data-rub="rub-article" tabindex="0">Academic article &amp; interpretation: 7 pts</span></h3>
+      <p class="helptext">Find one academic journal article related to one of the concepts you used in your redesign. Briefly discuss what the study found and what it means for your redesign. Cite it properly (APA is fine). Try <a href="https://scholar.google.com" target="_blank" rel="noopener">Google Scholar</a>. For example, if one of your changes was left-digit bias, try searching for "left digit bias" in quotes as your first attempt. If that doesn't turn up much, try it without the quotes, or try a related term instead.</p>
+      <label class="field-label" for="e1-citation">Full reference (APA)</label>
+      <textarea id="e1-citation" style="min-height:60px" placeholder="Author, A. A. (Year). Title. Journal, Vol(Issue), pages."></textarea>
+      <label class="field-label" for="e-argument">What did the study find, and what does it mean for your redesign?</label>
+      <textarea id="e-argument" style="min-height:110px" placeholder="Your answer..."></textarea>
+
+      <h3 class="subhead">Customer &amp; Ethical Considerations <span class="pts req">Required</span></h3>
+      <p class="helptext">Behavioral pricing techniques can help a company, but it's worth pausing on who else they affect.</p>
+      <label class="field-label" for="cust-perspective">Would the changes you made help the company, the customer, or both? Pick at least one of your changes and explain your reasoning.</label>
+      <textarea id="cust-perspective" style="min-height:110px" placeholder="Your answer..."></textarea>
+      <label class="field-label" for="ethics-reflect">Is there anything in your redesign that seems like it could be more transparent, fair, or ethical? If so, there's no need to redesign it for this project, but briefly discuss what could be more transparent/ethical and how you might change it. If you don't think anything needs improvement, briefly explain why you think your redesign is already transparent and fair.</label>
+      <textarea id="ethics-reflect" style="min-height:110px" placeholder="Your answer..."></textarea>
+    </div>
+
+    <div class="submit-banner">
+      <p class="submit-title">⚠ Don't forget to submit</p>
+      <p>This is the end of the required part of Project 1. Step 5 after this is optional extra credit, so you can submit now or after finishing it.</p>
+      <button class="submit-download-btn" id="download-backup-why">Download my answers now (.txt)</button>
+      <p>Go to <strong>Canvas → Project 1</strong> and upload your latest .txt file. Your live links (before.html and after.html) are included in it.</p>
+      <p class="submit-fine">Note: if you've clicked download more than once, your Downloads folder may have several versions of this file (Chrome/etc. add "(1)", "(2)", etc. to the name). Upload the most recent one.</p>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+  document.getElementById("download-backup-why").addEventListener("click", downloadBackup);
+}
+
+// =====================================================================
+// Standalone single-question concept checks (none currently used)
+// =====================================================================
+const STANDALONE_CHECKS = {
+};
+let standaloneMC = {};
+Object.keys(STANDALONE_CHECKS).forEach(k => { standaloneMC[k] = { sel: null, checked: false }; });
+
+function buildStandaloneMCHtml(key) {
+  const check = STANDALONE_CHECKS[key];
+  const optionsHtml = check.options.map(opt => `
+    <label class="mc-option">
+      <input type="radio" name="standalone-${key}" value="${opt.id}" ${standaloneMC[key].sel === opt.id ? "checked" : ""}>
+      <span>${esc(opt.text)}</span>
+    </label>
+  `).join("");
+  return `
+    <div class="mc-widget">
+      <div class="mc-label">Quick concept check</div>
+      <p class="mc-prompt">${esc(check.prompt)}</p>
+      ${optionsHtml}
+      <button class="check-btn" id="standalone-check-${key}">Check Answer</button>
+      <div class="mc-feedback" id="standalone-feedback-${key}"></div>
+    </div>
+  `;
+}
+
+function wireStandaloneMCHandlers(key) {
+  document.querySelectorAll(`input[name="standalone-${key}"]`).forEach(radio => {
+    radio.addEventListener("change", (e) => { standaloneMC[key].sel = e.target.value; scheduleSave(); });
+  });
+  const btn = document.getElementById(`standalone-check-${key}`);
+  if (btn) btn.addEventListener("click", () => evaluateStandaloneMC(key));
+  if (standaloneMC[key].checked) showStandaloneMCFeedback(key);
+}
+
+function evaluateStandaloneMC(key) {
+  if (!standaloneMC[key].sel) return;
+  standaloneMC[key].checked = true;
+  showStandaloneMCFeedback(key);
+  scheduleSave();
+}
+
+function showStandaloneMCFeedback(key) {
+  const check = STANDALONE_CHECKS[key];
+  const isCorrect = standaloneMC[key].sel === check.options.find(o => o.correct).id;
+  const fb = document.getElementById(`standalone-feedback-${key}`);
+  if (!fb) return;
+  fb.classList.add("show");
+  fb.classList.toggle("correct", isCorrect);
+  fb.classList.toggle("incorrect", !isCorrect);
+  fb.textContent = (isCorrect ? "Correct. " : "Not quite. ") + check.explanation;
+}
+
+function renderStandaloneMC(key) {
+  const c = document.getElementById(`${key}-mc-container`);
+  if (!c) return;
+  c.innerHTML = buildStandaloneMCHtml(key);
+  wireStandaloneMCHandlers(key);
+}
+
+// =====================================================================
+// STEP 5: Showcase Your Redesign
+// =====================================================================
+function buildRevealPrompt() {
+  const c1 = getVal("d1-concept") || "[Change 1 concept, from Step 4]";
+  const c2 = getVal("d2-concept") || "[Change 2 concept, from Step 4]";
+  return `Build a simple, single webpage for a portfolio showcase. It should show my redesigned pricing page exactly as it already looks, with no extra UI, for the first 3-5 seconds. Then, automatically (no click needed), fade in a small heading near the top that says "Here's how it changed," along with callout labels pointing at the specific elements I changed, each one labeled with the idea behind it:
+
+- ${c1}
+- ${c2}
+
+Use simple arrows, circles, or highlighted boxes to point at each element, and keep each callout label short (just a few words). This page is only for presentation purposes, so a single timed fade-in is enough; it doesn't need to be replayable or interactive beyond that. Keep the class-project disclaimer banner at the top and the disclaimer footer on the page, with their exact wording, and do not add any real company logo or brand image.`;
+}
+
+function buildPartShowcase() {
+  const panel = document.createElement("div");
+  panel.className = "tab-panel";
+  panel.dataset.tab = "showcase";
+  panel.innerHTML = `
+    <div class="callout">Everything below is optional, for extra credit, and not required. Skip it if you don't want the EC.</div>
+
+    <div class="card">
+      <span class="badge extra">Optional, extra credit</span>
+      <h2>Showcase Your Work</h2>
+      <p class="helptext">Turning your before/after work into something portfolio-ready for internships or job applications is optional and worth extra credit. Choose your own extra-credit adventure: do the 1-pt option, the 2-pt option, or both together (3 pts total).</p>
+
+      <details class="ec-toggle">
+        <summary>Option 1: GitHub Repo (1 pt EC)</summary>
+        <div class="ec-body">
+          <p class="helptext">Put your .html files in a repository so anyone can see the actual code behind your redesign. This is likely the easier option overall, even if you've never used GitHub before.</p>
+          <ol class="steps">
+            <li>Create a free account at <a href="https://github.com" target="_blank" rel="noopener">github.com</a> if you don't already have one.</li>
+            <li>Click "New" to create a new repository (any name is fine, e.g., "subscription-pricing-redesign").</li>
+            <li>On the repository page, click "Add file → Upload files" and drag in your before.html and after.html . This all happens in the browser; no command line needed.</li>
+            <li>Copy the repository's URL from your browser's address bar.</li>
+          </ol>
+          <label class="field-label" for="github-link">Your GitHub repo URL</label>
+          <input type="url" id="github-link" placeholder="https://github.com/...">
+        </div>
+      </details>
+
+      <details class="ec-toggle">
+        <summary>Option 2: Before → After Reveal Page (2 pts EC)</summary>
+        <div class="ec-body">
+          <p class="helptext">Instead of a static annotated image, build a small live page: it shows your "after" redesign alone for 3-5 seconds, then callouts fade in pointing at each change, labeled with the behavioral pricing concept behind it.</p>
+          <ol class="steps">
+            <li>In Lovable, remix your after.html project (or start a new project and attach a screenshot of after.html) so the base page matches your redesign exactly.</li>
+            <li>Paste the Reveal Prompt below as your message (it auto-fills with your two concept names from Step 4), then send it.</li>
+            <li>Watch it load: confirm the page shows cleanly first, then the callouts fade in a few seconds later on their own.</li>
+            <li>Click Publish and paste the live link below.</li>
+          </ol>
+          <div class="copy-row"><button class="copy-btn" id="copy-reveal-prompt">Copy Reveal Prompt</button></div>
+          <p class="helptext">Prefer not to build this as code? You can instead screen-record yourself clicking through a manual version (show the after page, pause a beat, then switch to a slide with arrows/labels drawn over it in <a href="https://canva.com" target="_blank" rel="noopener">Canva</a> or Google Slides), upload the recording to Google Drive or YouTube (unlisted), and link that instead.</p>
+          <label class="field-label" for="reveal-link">Your before → after reveal page (or recording) link</label>
+          <input type="url" id="reveal-link" placeholder="https://....lovable.app or https://drive.google.com/...">
+        </div>
+      </details>
+
+    </div>
+
+    <div class="submit-banner">
+      <p class="submit-title">⚠ Don't forget to submit</p>
+      <p>Everything on this page is optional extra credit, but make sure you've downloaded your most recent answers file (including whatever you just did here) and uploaded it to Canvas — that's what actually turns in Project 1, not this webpage.</p>
+      <button class="submit-download-btn" id="download-backup-showcase">Download my answers now (.txt)</button>
+      <p>Go to <strong>Canvas → Project 1</strong> and upload that .txt file, along with your live links (before.html and after.html) from Step 3.</p>
+      <p class="submit-fine">Note: if you've clicked download more than once, your Downloads folder may have several versions of this file (Chrome/etc. add "(1)", "(2)", etc. to the name). Upload the most recent/updated one.</p>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+  document.getElementById("copy-reveal-prompt").addEventListener("click", (e) => copyText(e.target, buildRevealPrompt()));
+  document.getElementById("download-backup-showcase").addEventListener("click", downloadBackup);
+}
+
+// =====================================================================
+// Build all tabs
+// =====================================================================
+function appendSectionNav(tabId) {
+  const idx = TABS.findIndex(t => t.id === tabId);
+  const panel = document.querySelector(`.tab-panel[data-tab="${tabId}"]`);
+  if (!panel) return;
+  const nav = document.createElement("div");
+  nav.className = "section-nav";
+  if (idx > -1 && idx < TABS.length - 1) {
+    const nextLabel = TABS[idx + 1].label.replace(/^\d+\.\s*/, "");
+    const gateMsg = tabId === "plan"
+      ? `<p class="status-note" id="plan-gate-note">Answer all 10 questions above before continuing.</p>`
+      : "";
+    nav.innerHTML = `${gateMsg}<button class="nav-btn" id="continue-${tabId}">Continue to ${esc(nextLabel)} →</button>`;
+    panel.appendChild(nav);
+    document.getElementById(`continue-${tabId}`).addEventListener("click", () => {
+      if (tabId === "plan" && !planSectionComplete()) return;
+      if (tabId === "why" && !autoDownloadTriggered) {
+        downloadBackup();
+        autoDownloadTriggered = true;
+        scheduleSave();
+      }
+      showTab(TABS[idx + 1].id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    if (tabId === "plan") updatePlanContinueNav();
+  } else {
+    nav.innerHTML = `<div class="callout">You've reached the end. Everything above autosaves as you go, so it's safe to leave and come back. Don't forget the red submission box above: download your answers (.txt) and upload it to Canvas with your three live links to submit Project 1.</div>`;
+    panel.appendChild(nav);
+  }
+}
+
+buildStartTab();
+buildPlanTab();
+renderSectionB();
+buildPartMake();
+buildWhyTab();
+buildPartShowcase();
+
+TABS.forEach(t => appendSectionNav(t.id));
+
+// =====================================================================
+// Autosave / restore
+// =====================================================================
+const STORAGE_KEY = "pricing-assignment-progress-v6";
+
+function collectState() {
+  const values = {};
+  document.querySelectorAll("textarea[id], input[id]").forEach(el => {
+    if (el.id === "answer-current") return; // handled via sbAnswers
+    values[el.id] = el.type === "checkbox" ? el.checked : el.value;
+  });
+  return { values, sbIndex, sbReview, sbEditingFromReview, sbAnswers, sbMC, standaloneMC, b10Prefilled, pasteCount, copyCount, autoDownloadTriggered };
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    Object.entries(state.values || {}).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === "checkbox") { el.checked = !!val; }
+      else if (val) { el.value = val; }
+    });
+    pasteCount = state.pasteCount || 0;
+    autoDownloadTriggered = !!state.autoDownloadTriggered;
+    copyCount = state.copyCount || 0;
+    if (Array.isArray(state.sbAnswers)) sbAnswers = state.sbAnswers;
+    if (state.sbMC) sbMC = state.sbMC;
+    if (state.standaloneMC) standaloneMC = Object.assign(standaloneMC, state.standaloneMC);
+    b10Prefilled = !!state.b10Prefilled;
+    sbIndex = state.sbIndex || 0;
+    sbReview = !!state.sbReview;
+    sbEditingFromReview = !!state.sbEditingFromReview;
+    renderSectionB();
+    Object.keys(STANDALONE_CHECKS).forEach(renderStandaloneMC);
+  } catch (e) {
+    console.warn("Could not restore saved progress", e);
+  }
+}
+
+let saveTimer = null;
+function scheduleSave() {
+  updatePlanContinueNav();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+      const note = document.getElementById("saved-note");
+      note.classList.add("show");
+      setTimeout(() => note.classList.remove("show"), 1200);
+    } catch (e) { console.warn("Could not save progress", e); }
+  }, 400);
+}
+document.addEventListener("input", (e) => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") scheduleSave();
+});
+document.addEventListener("change", (e) => {
+  if (e.target.type === "checkbox") scheduleSave();
+});
+
+// =====================================================================
+// Backup file download (not a submission, just an optional local copy)
+// =====================================================================
+function randToken() { return Math.random().toString(36).slice(2, 6); }
+
+function fullUrl(v) {
+  v = (v || "").trim();
+  if (!v) return "[not filled in]";
+  v = v.split(/\s+/)[0];
+  return /^https?:\/\//i.test(v) ? v : "https://" + v;
+}
+
+function buildBackupText() {
+  const lines = [];
+  lines.push("Behavioral Pricing Assignment: Backup Copy");
+  lines.push(`Name: ${getVal("student-name") || "[not filled in]"}`);
+  lines.push(`Downloaded: ${new Date().toISOString()}`);
+  const activityCode = `${randToken()}-cp${pasteCount}-${randToken()}-cy${copyCount}-${randToken()}`;
+  lines.push(`Activity code: ${activityCode}`);
+  lines.push("");
+  lines.push("LINKS (each link is on its own line, so you can click it or copy it into a browser):");
+  lines.push("Company's current pricing page (the original \"before\"):");
+  lines.push(fullUrl(getVal("company-url")));
+  lines.push("My before.html (cloned before page):");
+  lines.push(fullUrl(getVal("make-before-url")));
+  lines.push("My after.html (redesign):");
+  lines.push(fullUrl(getVal("make-after-url")));
+  lines.push("");
+
+  lines.push("Getting Started:");
+  lines.push(`Company: ${getVal("company-name") || "[not filled in]"}`);
+  lines.push("Pricing page URL:");
+  lines.push(fullUrl(getVal("company-url")));
+  lines.push(`Client background (who they are, years in business, other offerings, brand positioning, how well the pricing page communicates it): ${getVal("client-background") || "[not filled in]"}`);
+  lines.push(`Brainstormed changes: ${getVal("brainstorm-changes") || "[not filled in]"}`);
+  lines.push(`Behavioral pricing principles recalled: ${getVal("principles-recall") || "[not filled in]"}`);
+  lines.push(`Ideas from lecture examples: ${getVal("examples-ideas") || "[not filled in]"}`);
+  lines.push(`Competitor / ahead-of-the-curve company + idea: ${getVal("competitors") || "[not filled in]"}`);
+  lines.push(`Positioning/page differences: ${getVal("positioning-diff") || "[not filled in]"}`);
+  lines.push("");
+
+  lines.push("Plan Your Redesign:");
+  QUESTIONS.forEach((qtext, idx) => {
+    const n = idx + 1;
+    const answer = getAnswer(n);
+    lines.push(`B${n}. ${qtext}`);
+    lines.push(answer || "[not filled in]");
+    if (MC_CHECKS[n]) {
+      const mc = MC_CHECKS[n];
+      const selText = sbMC[n].sel.map(id => mc.options.find(o => o.id === id)?.text || id).join(" | ");
+      const correctIds = mc.options.filter(o => o.correct).map(o => o.id).sort();
+      const isCorrect = sbMC[n].checked && correctIds.length === sbMC[n].sel.length &&
+        [...sbMC[n].sel].sort().every((v, i) => v === correctIds[i]);
+      lines.push(`  Concept check selection: ${selText || "(not answered)"} [${isCorrect ? "correct" : "incorrect/incomplete"}]`);
+    }
+    lines.push("");
+  });
+
+  lines.push("Make Your Redesigned Pricing Page (after.html iteration):");
+  lines.push("Lovable chat for before.html:");
+  lines.push(getVal("chat-before") || "[not filled in]");
+  lines.push("Lovable chat for after.html:");
+  lines.push(getVal("chat-after") || "[not filled in]");
+  lines.push(`Self-review notes: ${getVal("self-review-notes") || "[not filled in]"}`);
+  lines.push(`AI-suggested ideas discussed: ${getVal("ai-ideas-discuss") || "[not filled in]"}`);
+  lines.push("");
+
+  lines.push("Why These Changes Matter:");
+  lines.push(`Change 1 (${getVal("d1-concept") || "[concept]"}): ${getVal("d1-explain") || "[not filled in]"}`);
+  lines.push(`Change 2 (${getVal("d2-concept") || "[concept]"}): ${getVal("d2-explain") || "[not filled in]"}`);
+  lines.push(`Academic source: ${getVal("e1-citation") || "[not filled in]"}`);
+  lines.push(`Discussion: ${getVal("e-argument") || "[not filled in]"}`);
+  lines.push(`Company/customer/both: ${getVal("cust-perspective") || "[not filled in]"}`);
+  lines.push(`Transparency/ethics reflection: ${getVal("ethics-reflect") || "[not filled in]"}`);
+  lines.push("");
+
+  function standaloneLine(key) {
+    const check = STANDALONE_CHECKS[key];
+    const st = standaloneMC[key];
+    const selText = st.sel ? (check.options.find(o => o.id === st.sel)?.text || st.sel) : "(not answered)";
+    const correctId = check.options.find(o => o.correct).id;
+    return `  Concept check selection: ${selText} [${st.checked && st.sel === correctId ? "correct" : "incorrect/incomplete"}]`;
+  }
+
+  lines.push("Showcase Your Redesign (Extra Credit, optional, 3 pts total):");
+  lines.push("GitHub repo link (1 pt):");
+  lines.push(fullUrl(getVal("github-link")));
+  lines.push("Before → after reveal page/recording link (2 pts):");
+  lines.push(fullUrl(getVal("reveal-link")));
+
+  return lines.join("\n");
+}
+
+function downloadBackup() {
+  const text = buildBackupText();
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "behavioral-pricing-backup.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("download-backup").addEventListener("click", downloadBackup);
+
+restoreState();
+</script>
+
+</body>
+</html>
